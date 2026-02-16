@@ -1,15 +1,119 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    "Nunito Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display:
+    "Outfit", "Nunito Sans", "Segoe UI", ui-sans-serif, system-ui,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --color-primary: #0066cc;
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+:root {
+  color-scheme: light;
+  /* Paleta GMC - azul profesional */
+  --gmc-blue: #0066cc;
+  --gmc-dark: #000000;
+  --gmc-gray: #1a1a1a;
+  --gmc-gray-medium: #2a2a2a;
+  --gmc-border: #374151;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+body {
+  @apply min-h-screen text-slate-900 antialiased;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0, 102, 204, 0.03) 0%,
+      rgba(0, 0, 0, 0.05) 100%
+    ),
+    linear-gradient(180deg, #f5f7fa 0%, #eef2f7 100%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+@layer utilities {
+  .card-racing {
+    @apply rounded-xl border border-slate-200 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.95)
+    );
+  }
+
+  .card-racing-dark {
+    @apply rounded-xl border border-gray-800 shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1;
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  }
+
+  .btn-racing {
+    @apply cursor-pointer rounded-lg bg-primary text-white px-6 py-2.5 font-bold uppercase tracking-wider shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-95;
+  }
+
+  .progress-bar {
+    @apply relative h-7 overflow-hidden rounded-lg bg-gradient-to-b from-gray-200 to-gray-300 shadow-inner;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 transition-all duration-700;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 20px rgba(0, 102, 204, 0.5);
+  }
+
+  .speed-line {
+    @apply absolute inset-0 opacity-20;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 102, 204, 0.1) 10px,
+      rgba(0, 102, 204, 0.1) 11px
+    );
+  }
+}
+
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(0, 102, 204, 0.4),
+      0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(0, 102, 204, 0.6),
+      0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes speed-lines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100px 0;
   }
 }

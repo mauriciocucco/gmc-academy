@@ -1,87 +1,50 @@
-# Welcome to React Router!
+# GMC Academy Frontend
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Frontend MVP para el e-learning de Autoescuela GMC.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Stack
 
-## Features
+- React 19
+- React Router v7
+- TypeScript
+- Tailwind CSS v4
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Estado actual
 
-## Getting Started
+- Login por rol (demo local): `student` y `admin`
+- Rutas protegidas por rol
+- Panel estudiante:
+  - Inicio
+  - Materiales
+  - Examen de practica
+  - Certificado (placeholder)
+- Panel admin:
+  - Inicio con metricas
+  - Gestion de materiales (mock)
+  - Tabla de alumnos (mock)
 
-### Installation
+Nota: por ahora no hay backend conectado. La sesion y datos de ejemplo son locales.
 
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+## Scripts
 
 ```bash
-npm run build
+pnpm dev
+pnpm build
+pnpm start
+pnpm typecheck
 ```
 
-## Deployment
+## Estructura principal
 
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+```text
+app/
+  components/
+  data/
+  lib/
+  routes/
+docs/plans/
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Siguiente paso
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+Conectar este frontend a API NestJS + PostgreSQL (TypeORM) para reemplazar auth y datos mock.
