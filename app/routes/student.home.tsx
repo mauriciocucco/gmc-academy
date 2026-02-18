@@ -20,7 +20,9 @@ function buildQuickActions(progress: StudentProgress): QuickAction[] {
       description: "Accede al contenido subido por la autoescuela.",
       icon: "📚",
       gradient: "from-blue-500 to-blue-700",
-      completed: progress.materialsViewed > 0,
+      completed:
+        progress.materialsTotal > 0 &&
+        progress.materialsViewed >= progress.materialsTotal,
     },
     {
       to: "/student/exam",

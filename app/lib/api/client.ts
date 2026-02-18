@@ -58,6 +58,7 @@ async function fetchWithAuth(
   path: string,
   options: RequestInit = {},
   isRetry = false,
+  skipRedirectOn401 = false,
 ): Promise<Response> {
   const accessToken = getAccessToken();
   const headers: Record<string, string> = {
@@ -79,7 +80,7 @@ async function fetchWithAuth(
             resolve(response);
             return;
           }
-          resolve(fetchWithAuth(path, options, true));
+          resolve(fetchWithAuth(path, options, true, skipRedirectOn401));
         });
       });
     }
@@ -91,13 +92,15 @@ async function fetchWithAuth(
     if (newToken) {
       refreshQueue.forEach((cb) => cb(newToken));
       refreshQueue = [];
-      return fetchWithAuth(path, options, true);
+      return fetchWithAuth(path, options, true, skipRedirectOn401);
     }
 
     refreshQueue.forEach((cb) => cb(null));
     refreshQueue = [];
 
-    window.location.href = "/login";
+    if (!skipRedirectOn401) {
+      window.location.href = "/login";
+    }
     return response;
   }
 
@@ -112,6 +115,7 @@ export async function apiRequest<T>(
   method: HttpMethod,
   path: string,
   body?: unknown,
+  skipRedirectOn401 = false,
 ): Promise<T> {
   const options: RequestInit = { method };
 
@@ -119,7 +123,7 @@ export async function apiRequest<T>(
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetchWithAuth(path, options);
+  const response = await fetchWithAuth(path, options, false, skipRedirectOn401);
 
   if (!response.ok) {
     const errorData = await response
@@ -153,12 +157,20 @@ export async function apiGet<T>(path: string): Promise<T> {
   return apiRequest<T>("GET", path);
 }
 
-export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
-  return apiRequest<T>("POST", path, body);
+export async function apiPost<T>(
+  path: string,
+  body?: unknown,
+  skipRedirectOn401 = false,
+): Promise<T> {
+  return apiRequest<T>("POST", path, body, skipRedirectOn401);
 }
 
-export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
-  return apiRequest<T>("PATCH", path, body);
+export async function apiPatch<T>(
+  path: string,
+  body?: unknown,
+  skipRedirectOn401 = false,
+): Promise<T> {
+  return apiRequest<T>("PATCH", path, body, skipRedirectOn401);
 }
 
 export async function apiDelete<T = void>(path: string): Promise<T> {

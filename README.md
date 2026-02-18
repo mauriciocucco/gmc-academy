@@ -26,7 +26,8 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 - [x] Sesion JWT persistida en `localStorage` con refresh transparente
 - [x] Panel estudiante: materiales reales, examen con submit real, certificado PDF on-demand
 - [x] Progreso del estudiante calculado en backend (`GET /api/v1/me/progress`)
-- [x] Materiales marcados como vistos al abrirlos (`POST /api/v1/materials/:id/view`)
+- [x] Materiales marcados/desmarcados como vistos por el alumno (`PATCH /api/v1/materials/:id/view`)
+- [x] Admin puede desmarcar un material como visto para un alumno (`DELETE /api/v1/materials/:id/view/:studentId`)
 - [x] Panel admin: KPIs reales, tabla de alumnos real, CRUD de materiales real
 - [ ] Backend NestJS + PostgreSQL (pendiente — proyecto separado)
 - [ ] QA y despliegue (Fase 7 pendiente)

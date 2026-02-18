@@ -39,6 +39,7 @@ export type MaterialResponse = {
   createdById: string;
   category: MaterialCategory;
   links: MaterialLink[];
+  viewed: boolean | null;
 };
 
 export type CreateMaterialDto = {

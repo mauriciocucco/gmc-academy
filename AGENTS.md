@@ -2,6 +2,10 @@
 
 Guia para agentes de IA que trabajen en este repositorio.
 
+> **Limite de este archivo: 200 lineas.** Antes de agregar contenido nuevo, elimina
+> lo obsoleto o resumelo. Actualiza este archivo (y `README.md` si aplica) cada vez
+> que agregues endpoints, servicios, reglas de negocio o cambios de arquitectura.
+
 ## Descripcion del proyecto
 
 Plataforma e-learning para Autoescuela GMC. Dos roles: `student` y `admin`.  
@@ -34,9 +38,9 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 
 4. **No modificar** la estructura de carpetas ni la arquitectura existente sin instruccion explicita.
 
-5. **No conectar** al backend real hasta que el proyecto NestJS exista y este documentado aqui.
+5. **Actualizar documentacion** al terminar cada tarea: reflejar nuevos endpoints en la seccion "API", nuevos servicios en la tabla de "Capa API", y reglas de negocio en "Seguridad". Actualizar `README.md` si el estado del proyecto cambia.
 
-6. **Marcar material como visto** al hacer click en cualquier link de un material: llamar a `markMaterialViewed(id)` (fire-and-forget).
+6. **Marcar material como visto** al hacer click en cualquier link: llamar a `setMaterialViewed(id, true)` (fire-and-forget). El check en la card permite toggle.
 
 ## Estructura de rutas
 
@@ -60,20 +64,15 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 - **Tipado**: siempre tipado explicito. Evitar `any`.
 - **Guard clauses**: maximo 2 niveles de anidamiento; retorno temprano.
 
-## Auth mock (estado actual)
-
-~~El contexto de autenticacion esta en `app/lib/auth.tsx`. Usa estado local, sin backend.~~
+## Auth
 
 La autenticacion esta integrada con el backend real (`POST /api/v1/auth/login`).
 Los tokens `accessToken` y `refreshToken` se persisten en `localStorage`.
 Al iniciar la app se hidrata la sesion via `GET /api/v1/me`.
 
-Credenciales de prueba (mientras el backend este activo):
+Credenciales de prueba: `student@gmc.com` / `password` · `admin@gmc.com` / `password`
 
-- `student@gmc.com` / `password` → rol `student`
-- `admin@gmc.com` / `password` → rol `admin`
-
-Para cambiar a otro proveedor: modificar `app/lib/api/auth.service.ts` y `app/lib/api/client.ts`.
+Para cambiar de proveedor: modificar `app/lib/api/auth.service.ts` y `app/lib/api/client.ts`.
 
 ## Capa API
 
@@ -85,18 +84,13 @@ Los servicios tipados estan en `app/lib/api/`:
 | `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)      |
 | `errors.ts`               | ApiError normalizado                                         |
 | `auth.service.ts`         | login, logout, getMe, getMyProgress                          |
-| `materials.service.ts`    | CRUD de materiales, markMaterialViewed                       |
+| `materials.service.ts`    | CRUD de materiales, setMaterialViewed, unmarkMaterialViewed  |
 | `exams.service.ts`        | getActiveExam, submitExam                                    |
 | `attempts.service.ts`     | getMyAttempts                                                |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                 |
 | `admin.service.ts`        | getAdminStats, getAdminStudents, getAdminPerformance         |
 
 Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
-
-## Datos mock
-
-Los datos de ejemplo estan en `app/data/mock-data.ts`. Ya no se usan en rutas productivas.
-Pueden eliminarse cuando el backend este completamente validado.
 
 ## Fases del proyecto
 
@@ -111,7 +105,7 @@ Pueden eliminarse cuando el backend este completamente validado.
 | 6    | Panel admin con KPIs reales         | Completada |
 | 7    | QA y despliegue                     | Pendiente  |
 
-## API objetivo (cuando el backend exista)
+## API
 
 ```
 POST /api/v1/auth/login
@@ -127,10 +121,24 @@ POST /api/v1/exams/:id/submit
 GET  /api/v1/attempts/me
 GET  /api/v1/certificates/me/latest
 GET  /api/v1/me/progress          (student)
-POST /api/v1/materials/:id/view   (student)
+PATCH /api/v1/materials/:id/view  (student, body: { viewed: boolean })
+DELETE /api/v1/materials/:id/view/:studentId (admin)
 GET  /api/v1/admin/students       (admin)
 GET  /api/v1/admin/stats          (admin)
 ```
+
+## Calculo de progreso del estudiante
+
+El endpoint `GET /api/v1/me/progress` devuelve `{ materialsTotal, materialsViewed, examPassed, certificateIssued }`.
+El progreso se divide en 3 hitos con igual peso (33% cada uno):
+
+| Hito        | Condicion                                                 |
+| ----------- | --------------------------------------------------------- |
+| Materiales  | `materialsViewed >= materialsTotal && materialsTotal > 0` |
+| Examen      | `examPassed === true`                                     |
+| Certificado | `certificateIssued === true`                              |
+
+Esta logica esta implementada en `app-shell.tsx` (mini-barra en el header) y en `student.home.tsx` (barra grande + badges por tarjeta).
 
 ## Seguridad (reglas de negocio)
 

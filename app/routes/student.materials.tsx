@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getMaterials, markMaterialViewed } from "~/lib/api/materials.service";
+import { getMaterials, setMaterialViewed } from "~/lib/api/materials.service";
 import { normalizeError } from "~/lib/api/errors";
 import type { MaterialResponse } from "~/lib/api/types";
 
@@ -40,13 +40,30 @@ export default function StudentMaterialsPage() {
   const [materials, setMaterials] = useState<MaterialResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [viewedIds, setViewedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getMaterials()
-      .then(setMaterials)
+      .then((data) => {
+        setMaterials(data);
+        setViewedIds(
+          new Set(data.filter((m) => m.viewed === true).map((m) => m.id)),
+        );
+      })
       .catch((error) => setErrorMessage(normalizeError(error).message))
       .finally(() => setIsLoading(false));
   }, []);
+
+  function handleToggleViewed(id: string) {
+    const wasViewed = viewedIds.has(id);
+    setMaterialViewed(id, !wasViewed).catch(() => {});
+    setViewedIds((prev) => {
+      const next = new Set(prev);
+      if (wasViewed) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <section className="grid gap-6">
@@ -89,6 +106,7 @@ export default function StudentMaterialsPage() {
           {materials.map((item, index) => {
             const categoryKey = item.category.key;
             const colors = categoryColors[categoryKey] ?? defaultColors;
+            const isViewed = viewedIds.has(item.id);
 
             return (
               <article
@@ -107,11 +125,25 @@ export default function StudentMaterialsPage() {
                     >
                       {item.category.name}
                     </span>
-                    {item.publishedAt && (
-                      <span className="rounded-lg bg-slate-200 px-2 py-1 text-xs font-medium text-slate-600">
-                        {item.publishedAt.slice(0, 10)}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {item.publishedAt && (
+                        <span className="rounded-lg bg-slate-200 px-2 py-1 text-xs font-medium text-slate-600">
+                          {item.publishedAt.slice(0, 10)}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        title={isViewed ? "Quitar visto" : "Marcar como visto"}
+                        onClick={() => handleToggleViewed(item.id)}
+                        className={`flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-xs transition ${
+                          isViewed
+                            ? "border-green-500 bg-green-500 text-white"
+                            : "border-slate-300 bg-white text-slate-400 hover:border-green-400 hover:text-green-500"
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="text-lg font-bold text-slate-900">
@@ -122,18 +154,26 @@ export default function StudentMaterialsPage() {
                   </p>
 
                   <div className="mt-auto flex flex-col gap-2">
-                    {item.links.map((link) => (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-racing inline-block text-center"
-                        onClick={() => markMaterialViewed(item.id)}
-                      >
-                        {link.label} →
-                      </a>
-                    ))}
+                    {item.links.map((link, linkIndex) => {
+                      const label =
+                        link.label?.trim() ||
+                        (item.links.length > 1
+                          ? `Ver material ${linkIndex + 1}`
+                          : "Ver material");
+                      return (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn-racing flex items-center justify-between gap-2"
+                          onClick={() => handleToggleViewed(item.id)}
+                        >
+                          <span className="truncate">{label}</span>
+                          <span className="shrink-0">→</span>
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               </article>

@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 
 import { useAuth, type UserRole } from "~/lib/auth";
+import { getMyProgress } from "~/lib/api/auth.service";
+import type { StudentProgress } from "~/lib/api/types";
 import { WhatsAppButton } from "./whatsapp-button";
 
 type AppShellProps = {
@@ -41,6 +44,24 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
   const { session, signOut } = useAuth();
   const navigate = useNavigate();
   const navItems = role === "admin" ? adminNav : studentNav;
+  const [progress, setProgress] = useState<StudentProgress | null>(null);
+
+  useEffect(() => {
+    if (role !== "student") return;
+    getMyProgress()
+      .then(setProgress)
+      .catch(() => {});
+  }, [role]);
+
+  const completedCount = progress
+    ? [
+        progress.materialsTotal > 0 &&
+          progress.materialsViewed >= progress.materialsTotal,
+        progress.examPassed,
+        progress.certificateIssued,
+      ].filter(Boolean).length
+    : 0;
+  const progressPct = Math.round((completedCount / 3) * 100);
 
   return (
     <div className="min-h-screen px-4 pb-6 pt-4 sm:px-6">
@@ -63,6 +84,22 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
                 <p className="text-sm font-semibold text-slate-800">
                   {session?.fullName}
                 </p>
+                {role === "student" && progress && (
+                  <div className="mt-1.5">
+                    <div className="mb-1 flex items-center justify-between gap-3">
+                      <span className="text-xs text-slate-500">Progreso</span>
+                      <span className="text-xs font-bold text-[#0066cc]">
+                        {progressPct}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className="h-full rounded-full bg-[#0066cc] transition-all duration-500"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 type="button"
