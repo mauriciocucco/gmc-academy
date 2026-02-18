@@ -6,6 +6,8 @@ import type {
   UserProfile,
 } from "./types";
 
+let myProgressInFlight: Promise<StudentProgress> | null = null;
+
 export type LoginDto = {
   email: string;
   password: string;
@@ -24,7 +26,15 @@ export function getMe(): Promise<UserProfile> {
 }
 
 export function getMyProgress(): Promise<StudentProgress> {
-  return apiGet<StudentProgress>("/me/progress");
+  if (myProgressInFlight) {
+    return myProgressInFlight;
+  }
+
+  myProgressInFlight = apiGet<StudentProgress>("/me/progress").finally(() => {
+    myProgressInFlight = null;
+  });
+
+  return myProgressInFlight;
 }
 
 export function updateMe(dto: UpdateMeDto): Promise<UserProfile> {

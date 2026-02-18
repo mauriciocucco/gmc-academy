@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { getMyProgress } from "~/lib/api/auth.service";
 import type { StudentProgress } from "~/lib/api/types";
+import { useStudentProgress } from "~/components/app-shell";
+import { getStudentProgressStats } from "~/lib/progress";
 
 type QuickAction = {
   to: string;
@@ -61,29 +61,13 @@ function ProgressSkeleton() {
 }
 
 export default function StudentHomePage() {
-  const [progress, setProgress] = useState<StudentProgress | null>(null);
-
-  useEffect(() => {
-    getMyProgress()
-      .then(setProgress)
-      .catch(() => {
-        // Si falla, mostramos todo como no completado
-        setProgress({
-          materialsTotal: 0,
-          materialsViewed: 0,
-          examPassed: false,
-          certificateIssued: false,
-        });
-      });
-  }, []);
+  const progress = useStudentProgress();
 
   const quickActions = progress ? buildQuickActions(progress) : null;
-
-  const completedMissions = quickActions
-    ? quickActions.filter((a) => a.completed).length
-    : 0;
-  const totalMissions = 3;
-  const progressPercentage = (completedMissions / totalMissions) * 100;
+  const progressStats = progress ? getStudentProgressStats(progress) : null;
+  const completedTasks = progressStats?.completedTasks ?? 0;
+  const totalTasks = progressStats?.totalTasks ?? 0;
+  const progressPercentage = progressStats?.percentage ?? 0;
 
   return (
     <section className="grid gap-6">
@@ -107,7 +91,7 @@ export default function StudentHomePage() {
               <div>
                 <h2 className="text-2xl font-bold text-white">Tu Progreso</h2>
                 <p className="text-sm font-medium text-slate-300">
-                  Misiones completadas: {completedMissions}/{totalMissions}
+                  Tareas completadas: {completedTasks}/{totalTasks}
                 </p>
               </div>
               <div className="text-4xl font-black text-blue-500">

@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 
 import { useAuth, type UserRole } from "~/lib/auth";
 import { getMyProgress } from "~/lib/api/auth.service";
 import type { StudentProgress } from "~/lib/api/types";
+import { getStudentProgressStats } from "~/lib/progress";
 import { onStudentProgressUpdated } from "~/lib/progress-events";
 import { WhatsAppButton } from "./whatsapp-button";
 
@@ -19,6 +20,12 @@ type NavItem = {
   label: string;
   to: string;
 };
+
+const StudentProgressContext = createContext<StudentProgress | null>(null);
+
+export function useStudentProgress(): StudentProgress | null {
+  return useContext(StudentProgressContext);
+}
 
 const studentNav: NavItem[] = [
   { label: "Inicio", to: "/student" },
@@ -51,7 +58,14 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
     if (role !== "student") return;
     getMyProgress()
       .then(setProgress)
-      .catch(() => {});
+      .catch(() => {
+        setProgress({
+          materialsTotal: 0,
+          materialsViewed: 0,
+          examPassed: false,
+          certificateIssued: false,
+        });
+      });
   }, [role]);
 
   useEffect(() => {
@@ -64,15 +78,7 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
     return onStudentProgressUpdated(refreshProgress);
   }, [role, refreshProgress]);
 
-  const completedCount = progress
-    ? [
-        progress.materialsTotal > 0 &&
-          progress.materialsViewed >= progress.materialsTotal,
-        progress.examPassed,
-        progress.certificateIssued,
-      ].filter(Boolean).length
-    : 0;
-  const progressPct = Math.round((completedCount / 3) * 100);
+  const progressPct = progress ? getStudentProgressStats(progress).percentage : 0;
 
   return (
     <div className="min-h-screen px-4 pb-6 pt-4 sm:px-6">
@@ -169,7 +175,11 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
           </ul>
         </nav>
 
-        <main>{children}</main>
+        <StudentProgressContext.Provider
+          value={role === "student" ? progress : null}
+        >
+          <main>{children}</main>
+        </StudentProgressContext.Provider>
       </div>
 
       <WhatsAppButton />

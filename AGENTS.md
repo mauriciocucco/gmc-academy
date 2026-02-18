@@ -133,13 +133,17 @@ GET  /api/v1/admin/stats          (admin)
 ## Calculo de progreso del estudiante
 
 El endpoint `GET /api/v1/me/progress` devuelve `{ materialsTotal, materialsViewed, examPassed, certificateIssued }`.
-El progreso se divide en 3 hitos con igual peso (33% cada uno):
+El porcentaje de progreso se calcula por tareas:
 
-| Hito        | Condicion                                                 |
-| ----------- | --------------------------------------------------------- |
-| Materiales  | `materialsViewed >= materialsTotal && materialsTotal > 0` |
-| Examen      | `examPassed === true`                                     |
-| Certificado | `certificateIssued === true`                              |
+- Total de tareas: `materialsTotal + 2` (examen + certificado).
+- Tareas completadas: `materialsViewed + (examPassed ? 1 : 0) + (certificateIssued ? 1 : 0)`.
+- Porcentaje: `round((tareasCompletadas / tareasTotales) * 100)`.
+- `materialsViewed` se limita al rango `0..materialsTotal` para evitar valores invalidos.
+
+Las tarjetas de home mantienen el badge "Completado" por hito:
+- Materiales: `materialsViewed >= materialsTotal && materialsTotal > 0`.
+- Examen: `examPassed === true`.
+- Certificado: `certificateIssued === true`.
 
 Esta logica esta implementada en `app-shell.tsx` (mini-barra en el header) y en `student.home.tsx` (barra grande + badges por tarjeta).
 
