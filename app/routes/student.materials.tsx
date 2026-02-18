@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getMaterials, setMaterialViewed } from "~/lib/api/materials.service";
 import { normalizeError } from "~/lib/api/errors";
 import type { MaterialResponse } from "~/lib/api/types";
+import { notifyStudentProgressUpdated } from "~/lib/progress-events";
 
 const categoryLabels = {
   teoria: "Teoria",
@@ -54,15 +55,31 @@ export default function StudentMaterialsPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  function handleToggleViewed(id: string) {
-    const wasViewed = viewedIds.has(id);
-    setMaterialViewed(id, !wasViewed).catch(() => {});
+  function updateViewedState(id: string, viewed: boolean) {
     setViewedIds((prev) => {
       const next = new Set(prev);
-      if (wasViewed) next.delete(id);
-      else next.add(id);
+      if (viewed) next.add(id);
+      else next.delete(id);
       return next;
     });
+  }
+
+  function handleToggleViewed(id: string) {
+    const wasViewed = viewedIds.has(id);
+    const nextViewed = !wasViewed;
+    setMaterialViewed(id, nextViewed)
+      .then(() => notifyStudentProgressUpdated())
+      .catch(() => {});
+    updateViewedState(id, nextViewed);
+  }
+
+  function handleMaterialLinkOpen(id: string) {
+    if (viewedIds.has(id)) return;
+
+    setMaterialViewed(id, true)
+      .then(() => notifyStudentProgressUpdated())
+      .catch(() => {});
+    updateViewedState(id, true);
   }
 
   return (
@@ -167,7 +184,7 @@ export default function StudentMaterialsPage() {
                           target="_blank"
                           rel="noreferrer"
                           className="btn-racing flex items-center justify-between gap-2"
-                          onClick={() => handleToggleViewed(item.id)}
+                          onClick={() => handleMaterialLinkOpen(item.id)}
                         >
                           <span className="truncate">{label}</span>
                           <span className="shrink-0">→</span>

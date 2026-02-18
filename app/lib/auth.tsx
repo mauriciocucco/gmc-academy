@@ -22,6 +22,7 @@ export type Session = {
   fullName: string;
   email: string;
   role: UserRole;
+  profilePhotoUrl: string | null;
 };
 
 type SignInInput = {
@@ -34,6 +35,7 @@ type AuthContextValue = {
   session: Session | null;
   signIn: (input: SignInInput) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -43,6 +45,7 @@ function profileToSession(user: UserProfile): Session {
     fullName: user.fullName,
     email: user.email,
     role: user.role,
+    profilePhotoUrl: user.profilePhotoUrl,
   };
 }
 
@@ -81,9 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   }, []);
 
+  const refreshSession = useCallback(async () => {
+    const user = await getMe();
+    setSession(profileToSession(user));
+  }, []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ isReady, session, signIn, signOut }),
-    [isReady, session, signIn, signOut],
+    () => ({ isReady, session, signIn, signOut, refreshSession }),
+    [isReady, session, signIn, signOut, refreshSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

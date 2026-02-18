@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router";
 
 import { useAuth, type UserRole } from "~/lib/auth";
 import { getMyProgress } from "~/lib/api/auth.service";
 import type { StudentProgress } from "~/lib/api/types";
+import { onStudentProgressUpdated } from "~/lib/progress-events";
 import { WhatsAppButton } from "./whatsapp-button";
 
 type AppShellProps = {
@@ -46,12 +47,22 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
   const navItems = role === "admin" ? adminNav : studentNav;
   const [progress, setProgress] = useState<StudentProgress | null>(null);
 
-  useEffect(() => {
+  const refreshProgress = useCallback(() => {
     if (role !== "student") return;
     getMyProgress()
       .then(setProgress)
       .catch(() => {});
   }, [role]);
+
+  useEffect(() => {
+    if (role !== "student") {
+      setProgress(null);
+      return;
+    }
+
+    refreshProgress();
+    return onStudentProgressUpdated(refreshProgress);
+  }, [role, refreshProgress]);
 
   const completedCount = progress
     ? [
@@ -77,40 +88,69 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-2xl bg-slate-100 px-3 py-2 text-right">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Bienvenid@
-                </p>
-                <p className="text-sm font-semibold text-slate-800">
-                  {session?.fullName}
-                </p>
-                {role === "student" && progress && (
-                  <div className="mt-1.5">
-                    <div className="mb-1 flex items-center justify-between gap-3">
-                      <span className="text-xs text-slate-500">Progreso</span>
-                      <span className="text-xs font-bold text-[#0066cc]">
-                        {progressPct}%
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className="h-full rounded-full bg-[#0066cc] transition-all duration-500"
-                        style={{ width: `${progressPct}%` }}
-                      />
-                    </div>
+              <div className="flex items-center gap-3 rounded-2xl bg-slate-100 px-3 py-2">
+                {/* Avatar */}
+                {session?.profilePhotoUrl ? (
+                  <img
+                    src={session.profilePhotoUrl}
+                    alt={session.fullName}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0066cc] text-sm font-bold text-white">
+                    {session?.fullName
+                      .split(" ")
+                      .slice(0, 2)
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
                   </div>
                 )}
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Bienvenid@
+                  </p>
+                  <p className="text-sm font-semibold text-slate-800">
+                    {session?.fullName}
+                  </p>
+                  {role === "student" && progress && (
+                    <div className="mt-1.5">
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <span className="text-xs text-slate-500">Progreso</span>
+                        <span className="text-xs font-bold text-[#0066cc]">
+                          {progressPct}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200">
+                        <div
+                          className="h-full rounded-full bg-[#0066cc] transition-all duration-500"
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  await signOut();
-                  navigate("/login");
-                }}
-                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
-              >
-                Cerrar sesion
-              </button>
+              <div className="flex flex-col gap-2">
+                {role === "student" && (
+                  <Link
+                    to="/student/profile"
+                    className="cursor-pointer rounded-xl border border-[#0066cc]/30 bg-[#0066cc]/10 px-3 py-2 text-center text-sm font-semibold text-[#0066cc] transition-colors hover:bg-[#0066cc]/20"
+                  >
+                    Editar perfil
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/login");
+                  }}
+                  className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Cerrar sesion
+                </button>
+              </div>
             </div>
           </div>
         </header>

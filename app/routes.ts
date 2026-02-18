@@ -8,6 +8,7 @@ export default [
     route("materials", "routes/student.materials.tsx"),
     route("exam", "routes/student.exam.tsx"),
     route("certificate", "routes/student.certificate.tsx"),
+    route("profile", "routes/student.profile.tsx"),
   ]),
   route("admin", "routes/admin.layout.tsx", [
     index("routes/admin.home.tsx"),

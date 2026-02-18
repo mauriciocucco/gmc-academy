@@ -1,5 +1,10 @@
-import { apiGet, publicPost } from "./client";
-import type { AuthSession, StudentProgress, UserProfile } from "./types";
+import { apiGet, apiPatch, apiPostMultipart, publicPost } from "./client";
+import type {
+  AuthSession,
+  StudentProgress,
+  UpdateMeDto,
+  UserProfile,
+} from "./types";
 
 export type LoginDto = {
   email: string;
@@ -20,4 +25,14 @@ export function getMe(): Promise<UserProfile> {
 
 export function getMyProgress(): Promise<StudentProgress> {
   return apiGet<StudentProgress>("/me/progress");
+}
+
+export function updateMe(dto: UpdateMeDto): Promise<UserProfile> {
+  return apiPatch<UserProfile>("/me", dto);
+}
+
+export function uploadProfilePhoto(file: File): Promise<UserProfile> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiPostMultipart<UserProfile>("/me/profile-photo", form);
 }

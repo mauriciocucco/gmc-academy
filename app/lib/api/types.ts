@@ -7,7 +7,14 @@ export type UserProfile = {
   email: string;
   fullName: string;
   phone: string | null;
+  profilePhotoUrl: string | null;
   role: UserRole;
+};
+
+export type UpdateMeDto = {
+  fullName?: string;
+  email?: string;
+  phone?: string | null;
 };
 
 export type AuthSession = {

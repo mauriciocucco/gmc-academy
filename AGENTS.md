@@ -50,6 +50,7 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 /student/materials      → student.materials.tsx
 /student/exam           → student.exam.tsx
 /student/certificate    → student.certificate.tsx
+/student/profile        → student.profile.tsx
 /admin                  → admin.home.tsx         (RequireAuth + RequireRole admin)
 /admin/materials        → admin.materials.tsx
 /admin/students         → admin.students.tsx
@@ -78,17 +79,17 @@ Para cambiar de proveedor: modificar `app/lib/api/auth.service.ts` y `app/lib/ap
 
 Los servicios tipados estan en `app/lib/api/`:
 
-| Archivo                   | Descripcion                                                  |
-| ------------------------- | ------------------------------------------------------------ |
-| `client.ts`               | Cliente fetch con auth, refresh transparente y manejo de 401 |
-| `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)      |
-| `errors.ts`               | ApiError normalizado                                         |
-| `auth.service.ts`         | login, logout, getMe, getMyProgress                          |
-| `materials.service.ts`    | CRUD de materiales, setMaterialViewed, unmarkMaterialViewed  |
-| `exams.service.ts`        | getActiveExam, submitExam                                    |
-| `attempts.service.ts`     | getMyAttempts                                                |
-| `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                 |
-| `admin.service.ts`        | getAdminStats, getAdminStudents, getAdminPerformance         |
+| Archivo                   | Descripcion                                                       |
+| ------------------------- | ----------------------------------------------------------------- |
+| `client.ts`               | Cliente fetch con auth, refresh transparente y manejo de 401      |
+| `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)           |
+| `errors.ts`               | ApiError normalizado                                              |
+| `auth.service.ts`         | login, logout, getMe, getMyProgress, updateMe, uploadProfilePhoto |
+| `materials.service.ts`    | CRUD de materiales, setMaterialViewed, unmarkMaterialViewed       |
+| `exams.service.ts`        | getActiveExam, submitExam                                         |
+| `attempts.service.ts`     | getMyAttempts                                                     |
+| `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                      |
+| `admin.service.ts`        | getAdminStats, getAdminStudents, getAdminPerformance              |
 
 Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
 
@@ -112,6 +113,8 @@ POST /api/v1/auth/login
 POST /api/v1/auth/refresh
 POST /api/v1/auth/logout
 GET  /api/v1/me
+PATCH /api/v1/me              (student, body: UpdateMeDto)
+POST /api/v1/me/profile-photo (student, multipart file)
 GET  /api/v1/materials
 POST /api/v1/materials            (admin)
 PATCH /api/v1/materials/:id       (admin)

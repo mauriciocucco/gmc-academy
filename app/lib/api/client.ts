@@ -157,6 +157,33 @@ export async function apiGet<T>(path: string): Promise<T> {
   return apiRequest<T>("GET", path);
 }
 
+/** Multipart POST — does NOT set Content-Type (browser adds boundary automatically) */
+export async function apiPostMultipart<T>(
+  path: string,
+  body: FormData,
+): Promise<T> {
+  const accessToken = getAccessToken();
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers,
+    body,
+  });
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
+    const message =
+      (errorData as { message?: string }).message ?? "Error en la solicitud.";
+    throw new ApiError(message, "UNKNOWN_ERROR", response.status);
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export async function apiPost<T>(
   path: string,
   body?: unknown,
