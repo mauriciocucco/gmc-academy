@@ -1,11 +1,20 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+
+import { clearTokens, getAccessToken, setTokens } from "~/lib/api/client";
+import {
+  getMe,
+  login as apiLogin,
+  logout as apiLogout,
+} from "~/lib/api/auth.service";
+import type { UserProfile } from "~/lib/api/types";
 
 export type UserRole = "student" | "admin";
 
@@ -16,94 +25,65 @@ export type Session = {
 };
 
 type SignInInput = {
-  fullName: string;
   email: string;
-  role: UserRole;
+  password: string;
 };
 
 type AuthContextValue = {
   isReady: boolean;
   session: Session | null;
-  signIn: (input: SignInInput) => void;
-  signOut: () => void;
+  signIn: (input: SignInInput) => Promise<void>;
+  signOut: () => Promise<void>;
 };
-
-const SESSION_KEY = "gmc-academy.session.v1";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function isSession(value: unknown): value is Session {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const record = value as Record<string, unknown>;
-  return (
-    typeof record.fullName === "string" &&
-    typeof record.email === "string" &&
-    (record.role === "student" || record.role === "admin")
-  );
-}
-
-function readSession(): Session | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const raw = window.localStorage.getItem(SESSION_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    return isSession(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(session: Session | null) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (!session) {
-    window.localStorage.removeItem(SESSION_KEY);
-    return;
-  }
-
-  window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+function profileToSession(user: UserProfile): Session {
+  return {
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  /** Hydrate session from stored token on mount */
   useEffect(() => {
-    setSession(readSession());
-    setIsReady(true);
+    const token = getAccessToken();
+
+    if (!token) {
+      setIsReady(true);
+      return;
+    }
+
+    getMe()
+      .then((user) => setSession(profileToSession(user)))
+      .catch(() => {
+        clearTokens();
+      })
+      .finally(() => setIsReady(true));
+  }, []);
+
+  const signIn = useCallback(async (input: SignInInput) => {
+    const authSession = await apiLogin(input);
+    setTokens(authSession.accessToken, authSession.refreshToken);
+    setSession(profileToSession(authSession.user));
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await apiLogout().catch(() => {
+      // best-effort; always clear locally
+    });
+    clearTokens();
+    setSession(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      isReady,
-      session,
-      signIn: (input) => {
-        const nextSession: Session = {
-          fullName: input.fullName.trim(),
-          email: input.email.trim().toLowerCase(),
-          role: input.role,
-        };
-        setSession(nextSession);
-        writeSession(nextSession);
-      },
-      signOut: () => {
-        setSession(null);
-        writeSession(null);
-      },
-    }),
-    [isReady, session],
+    () => ({ isReady, session, signIn, signOut }),
+    [isReady, session, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

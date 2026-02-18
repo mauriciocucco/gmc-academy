@@ -4,13 +4,13 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 
 ## Stack
 
-| Capa                        | Tecnologia                                   |
-| --------------------------- | -------------------------------------------- |
-| Frontend                    | React 19 + React Router v7 + Tailwind CSS v4 |
-| Backend (planificado)       | NestJS + JWT                                 |
-| Base de datos (planificada) | PostgreSQL                                   |
-| Runtime                     | Node.js 22                                   |
-| Package manager             | pnpm                                         |
+| Capa            | Tecnologia                                   |
+| --------------- | -------------------------------------------- |
+| Frontend        | React 19 + React Router v7 + Tailwind CSS v4 |
+| Backend         | NestJS + JWT (proyecto separado)             |
+| Base de datos   | PostgreSQL                                   |
+| Runtime         | Node.js 22                                   |
+| Package manager | pnpm                                         |
 
 ## Roles
 
@@ -19,19 +19,23 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 | `student` | Inicio, Materiales, Examen, Certificado                  |
 | `admin`   | Inicio con KPIs, Gestion de materiales, Tabla de alumnos |
 
-## Estado actual (Fase 0 completada)
+## Estado actual
 
 - [x] Shell navegable con rutas protegidas por rol
-- [x] Login demo local (`student` / `admin`)
-- [x] Panel estudiante: inicio, materiales, examen, certificado (placeholder)
-- [x] Panel admin: KPIs mock, gestion de materiales mock, tabla de alumnos mock
-- [ ] Backend NestJS (Fase 1 pendiente)
-- [ ] Login real contra API (Fase 2 pendiente)
-- [ ] CRUD materiales real (Fase 3 pendiente)
-- [ ] Examen con persistencia (Fase 4 pendiente)
-- [ ] Generacion de certificado PDF (Fase 5 pendiente)
+- [x] Login real contra backend (`POST /api/v1/auth/login`)
+- [x] Sesion JWT persistida en `localStorage` con refresh transparente
+- [x] Panel estudiante: materiales reales, examen con submit real, certificado PDF on-demand
+- [x] Panel admin: KPIs reales, tabla de alumnos real, CRUD de materiales real
+- [ ] Backend NestJS + PostgreSQL (pendiente — proyecto separado)
+- [ ] QA y despliegue (Fase 7 pendiente)
 
-> Los datos de sesion y de ejemplo son locales hasta conectar el backend.
+> Requiere el backend corriendo en `http://localhost:3000` (configurable via `VITE_API_BASE_URL`).
+
+## Variables de entorno
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000/api/v1   # default si no se define
+```
 
 ## Scripts
 
@@ -47,8 +51,10 @@ pnpm typecheck  # validacion de tipos
 ```text
 app/
   components/     # componentes compartidos (AppShell, RouteGuards, WhatsAppButton)
-  data/           # mock data temporal
-  lib/            # auth provider y utilidades
+  data/           # mock data temporal (no usado en rutas productivas)
+  lib/
+    auth.tsx      # AuthProvider con sesion JWT real
+    api/          # capa de servicios tipados (client, types, errors, *.service)
   routes/         # paginas por rol (student.*, admin.*, login, index)
 docs/
   plans/          # documentos de diseno y arquitectura
@@ -62,9 +68,8 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 
 ## Proximos pasos
 
-Arrancar **Fase 1 + Fase 2**:
+**Fase 1 del backend** (proyecto NestJS separado):
 
-1. Levantar NestJS con modulos `auth` y `users`.
+1. Levantar NestJS con modulos `auth`, `users`, `materials`, `exams`, `certificates`.
 2. Conexion PostgreSQL + migraciones + seed.
-3. Reemplazar auth mock por login real con JWT.
-4. Proteccion de rutas por rol contra API real.
+3. Exponer los endpoints documentados en [docs/plans/2026-02-18-frontend-backend-integration-implementation-plan.md](docs/plans/2026-02-18-frontend-backend-integration-implementation-plan.md).

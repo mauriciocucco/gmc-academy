@@ -1,4 +1,8 @@
-import { mockStudents } from "~/data/mock-data";
+import { useEffect, useState } from "react";
+
+import { getAdminStats } from "~/lib/api/admin.service";
+import { normalizeError } from "~/lib/api/errors";
+import type { AdminStats } from "~/lib/api/types";
 
 function StatCard({
   label,
@@ -18,8 +22,12 @@ function StatCard({
 
   return (
     <article className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xl font-display ${toneClasses}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
+      <p
+        className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xl font-display ${toneClasses}`}
+      >
         {value}
       </p>
     </article>
@@ -27,27 +35,64 @@ function StatCard({
 }
 
 export default function AdminHomePage() {
-  const approvedCount = mockStudents.filter((student) => student.approved).length;
-  const approvalRate = Math.round((approvedCount / mockStudents.length) * 100);
-  const averageScore = Math.round(
-    mockStudents.reduce((sum, student) => sum + student.lastAttemptScore, 0) /
-      mockStudents.length,
-  );
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    getAdminStats()
+      .then(setStats)
+      .catch((error) => setErrorMessage(normalizeError(error).message))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <section className="grid gap-4">
       <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] backdrop-blur">
-        <h2 className="font-display text-2xl text-slate-900">Resumen academico</h2>
+        <h2 className="font-display text-2xl text-slate-900">
+          Resumen academico
+        </h2>
         <p className="mt-1 text-sm text-slate-600">
           Vista de administracion para seguimiento de performance de alumnos.
         </p>
       </article>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Alumnos activos" value={String(mockStudents.length)} tone="slate" />
-        <StatCard label="Tasa de aprobacion" value={`${approvalRate}%`} tone="emerald" />
-        <StatCard label="Promedio ultimo intento" value={`${averageScore}%`} tone="blue" />
-      </div>
+      {isLoading && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-white/70 bg-white/90 p-5 animate-pulse h-20"
+            />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && errorMessage && (
+        <article className="rounded-2xl bg-rose-100 p-6 text-center font-semibold text-rose-800">
+          {errorMessage}
+        </article>
+      )}
+
+      {!isLoading && stats && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Alumnos activos"
+            value={String(stats.totalStudents)}
+            tone="slate"
+          />
+          <StatCard
+            label="Tasa de aprobacion"
+            value={`${stats.approvalRate}%`}
+            tone="emerald"
+          />
+          <StatCard
+            label="Promedio ultimo intento"
+            value={`${stats.averageScore}%`}
+            tone="blue"
+          />
+        </div>
+      )}
     </section>
   );
 }

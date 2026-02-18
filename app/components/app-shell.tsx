@@ -66,8 +66,8 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  signOut();
+                onClick={async () => {
+                  await signOut();
                   navigate("/login");
                 }}
                 className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"

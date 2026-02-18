@@ -60,18 +60,41 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 
 ## Auth mock (estado actual)
 
-El contexto de autenticacion esta en `app/lib/auth.tsx`. Usa estado local, sin backend.
+~~El contexto de autenticacion esta en `app/lib/auth.tsx`. Usa estado local, sin backend.~~
 
-Credenciales de prueba:
+La autenticacion esta integrada con el backend real (`POST /api/v1/auth/login`).
+Los tokens `accessToken` y `refreshToken` se persisten en `localStorage`.
+Al iniciar la app se hidrata la sesion via `GET /api/v1/me`.
 
-- `student` / cualquier password → rol `student`
-- `admin` / cualquier password → rol `admin`
+Credenciales de prueba (mientras el backend este activo):
 
-Para reemplazarlo por auth real: implementar llamadas a `POST /api/v1/auth/login` y persistir el JWT.
+- `student@gmc.com` / `password` → rol `student`
+- `admin@gmc.com` / `password` → rol `admin`
+
+Para cambiar a otro proveedor: modificar `app/lib/api/auth.service.ts` y `app/lib/api/client.ts`.
+
+## Capa API
+
+Los servicios tipados estan en `app/lib/api/`:
+
+| Archivo                   | Descripcion                                                  |
+| ------------------------- | ------------------------------------------------------------ |
+| `client.ts`               | Cliente fetch con auth, refresh transparente y manejo de 401 |
+| `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)      |
+| `errors.ts`               | ApiError normalizado                                         |
+| `auth.service.ts`         | login, logout, getMe                                         |
+| `materials.service.ts`    | CRUD de materiales                                           |
+| `exams.service.ts`        | getActiveExam, submitExam                                    |
+| `attempts.service.ts`     | getMyAttempts                                                |
+| `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                 |
+| `admin.service.ts`        | getAdminStats, getAdminStudents, getAdminPerformance         |
+
+Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
 
 ## Datos mock
 
-Los datos de ejemplo estan en `app/data/mock-data.ts`. Se eliminaran cuando el backend este disponible.
+Los datos de ejemplo estan en `app/data/mock-data.ts`. Ya no se usan en rutas productivas.
+Pueden eliminarse cuando el backend este completamente validado.
 
 ## Fases del proyecto
 
@@ -79,11 +102,11 @@ Los datos de ejemplo estan en `app/data/mock-data.ts`. Se eliminaran cuando el b
 | ---- | ----------------------------------- | ---------- |
 | 0    | Shell frontend con rutas y layout   | Completada |
 | 1    | Backend NestJS base + PostgreSQL    | Pendiente  |
-| 2    | Login real + sesion JWT             | Pendiente  |
-| 3    | CRUD materiales real                | Pendiente  |
-| 4    | Examen con persistencia de intentos | Pendiente  |
-| 5    | Certificado PDF                     | Pendiente  |
-| 6    | Panel admin con KPIs reales         | Pendiente  |
+| 2    | Login real + sesion JWT             | Completada |
+| 3    | CRUD materiales real                | Completada |
+| 4    | Examen con persistencia de intentos | Completada |
+| 5    | Certificado PDF                     | Completada |
+| 6    | Panel admin con KPIs reales         | Completada |
 | 7    | QA y despliegue                     | Pendiente  |
 
 ## API objetivo (cuando el backend exista)

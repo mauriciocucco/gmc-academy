@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router";
 
-import { useAuth, type UserRole } from "~/lib/auth";
+import { useAuth } from "~/lib/auth";
+import { normalizeError } from "~/lib/api/errors";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { isReady, session, signIn } = useAuth();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isReady) {
     return (
@@ -28,33 +31,26 @@ export default function LoginPage() {
     );
   }
 
-  // Determinar rol basado en el email (simulando lógica de backend)
-  const determineRole = (email: string): UserRole => {
-    const normalizedEmail = email.trim().toLowerCase();
-    return normalizedEmail.includes("admin") ||
-      normalizedEmail.includes("gmc.admin")
-      ? "admin"
-      : "student";
-  };
-
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const normalizedEmail = email.trim().toLowerCase();
-    const role = determineRole(normalizedEmail);
-    const safeEmail = normalizedEmail || "usuario@gmc.local";
+    setErrorMessage("");
+    setIsLoading(true);
 
-    // Extraer nombre del email como fallback
-    const userName = safeEmail.split("@")[0].replace(/[._-]/g, " ");
-    const capitalizedName =
-      userName.charAt(0).toUpperCase() + userName.slice(1);
-
-    signIn({
-      fullName: capitalizedName,
-      email: safeEmail,
-      role,
-    });
-
-    navigate(role === "admin" ? "/admin" : "/student");
+    try {
+      await signIn({ email: email.trim().toLowerCase(), password });
+      // The AuthProvider updates session asynchronously;
+      // navigate to /student and let the role guard redirect if needed.
+      navigate("/student", { replace: true });
+    } catch (error) {
+      const apiError = normalizeError(error);
+      setErrorMessage(
+        apiError.status === 401
+          ? "Credenciales incorrectas. Verifica tu email y contraseña."
+          : apiError.message,
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -193,11 +189,20 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="btn-racing w-full bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3.5 text-white hover:from-blue-700 hover:to-blue-800"
-                style={{ animation: "glow-pulse 2s infinite" }}
+                disabled={isLoading}
+                className="btn-racing w-full bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3.5 text-white hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={
+                  !isLoading ? { animation: "glow-pulse 2s infinite" } : {}
+                }
               >
-                Acceder al Campus
+                {isLoading ? "Accediendo..." : "Acceder al Campus"}
               </button>
+
+              {errorMessage ? (
+                <p className="rounded-xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-800">
+                  {errorMessage}
+                </p>
+              ) : null}
             </form>
           </section>
         </div>

@@ -1,64 +1,107 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
-import { mockMaterials, type MaterialItem } from "~/data/mock-data";
+import {
+  createMaterial,
+  deleteMaterial,
+  getMaterialCategories,
+  getMaterials,
+} from "~/lib/api/materials.service";
+import { normalizeError } from "~/lib/api/errors";
+import type { MaterialCategory, MaterialResponse } from "~/lib/api/types";
 
 type FormState = {
   title: string;
   description: string;
-  driveUrl: string;
-  category: MaterialItem["category"];
+  linkLabel: string;
+  linkUrl: string;
+  categoryKey: string;
+  published: boolean;
 };
 
 const initialFormState: FormState = {
   title: "",
   description: "",
-  driveUrl: "",
-  category: "teoria",
+  linkLabel: "",
+  linkUrl: "",
+  categoryKey: "",
+  published: true,
 };
 
-const categoryLabels = {
-  teoria: "Teoria",
-  senales: "Senales",
-  simulacro: "Simulacro",
-} as const;
-
-const drivePattern = /drive\.google\.com/i;
-
 export default function AdminMaterialsPage() {
-  const [materials, setMaterials] = useState<MaterialItem[]>(
-    () => mockMaterials,
-  );
+  const [materials, setMaterials] = useState<MaterialResponse[]>([]);
+  const [categories, setCategories] = useState<MaterialCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    Promise.all([getMaterials(), getMaterialCategories()])
+      .then(([mats, cats]) => {
+        setMaterials(mats);
+        setCategories(cats);
+        if (cats.length > 0 && !formState.categoryKey) {
+          setFormState((prev) => ({ ...prev, categoryKey: cats[0].key }));
+        }
+      })
+      .catch((error) => setLoadError(normalizeError(error).message))
+      .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const title = formState.title.trim();
     const description = formState.description.trim();
-    const driveUrl = formState.driveUrl.trim();
+    const linkLabel = formState.linkLabel.trim();
+    const linkUrl = formState.linkUrl.trim();
 
-    if (!title || !description || !driveUrl) {
+    if (
+      !title ||
+      !description ||
+      !linkLabel ||
+      !linkUrl ||
+      !formState.categoryKey
+    ) {
       setErrorMessage("Completa todos los campos.");
       return;
     }
 
-    if (!drivePattern.test(driveUrl)) {
-      setErrorMessage("La URL debe corresponder a Google Drive.");
-      return;
-    }
-
-    const nextItem: MaterialItem = {
-      id: Date.now(),
-      title,
-      description,
-      driveUrl,
-      category: formState.category,
-      publishedAt: new Date().toISOString().slice(0, 10),
-    };
-
-    setMaterials((prev) => [nextItem, ...prev]);
-    setFormState(initialFormState);
     setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const newMaterial = await createMaterial({
+        title,
+        description,
+        categoryKey: formState.categoryKey,
+        published: formState.published,
+        links: [{ label: linkLabel, url: linkUrl }],
+      });
+      setMaterials((prev) => [newMaterial, ...prev]);
+      setFormState({
+        ...initialFormState,
+        categoryKey: categories[0]?.key ?? "",
+      });
+    } catch (error) {
+      setErrorMessage(normalizeError(error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await deleteMaterial(id);
+      setMaterials((prev) => prev.filter((m) => m.id !== id));
+    } catch (error) {
+      setErrorMessage(normalizeError(error).message);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -68,7 +111,7 @@ export default function AdminMaterialsPage() {
           Publicar material
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Carga recursos en Google Drive y compartelos con los estudiantes.
+          Carga recursos y compartilos con los estudiantes.
         </p>
 
         <form onSubmit={onSubmit} className="mt-5 space-y-3">
@@ -112,26 +155,49 @@ export default function AdminMaterialsPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="driveUrl"
-              className="mb-1.5 block text-sm font-semibold text-slate-700"
-            >
-              URL de Google Drive
-            </label>
-            <input
-              id="driveUrl"
-              type="url"
-              value={formState.driveUrl}
-              onChange={(event) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  driveUrl: event.target.value,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
-              placeholder="https://drive.google.com/..."
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="linkLabel"
+                className="mb-1.5 block text-sm font-semibold text-slate-700"
+              >
+                Etiqueta del enlace
+              </label>
+              <input
+                id="linkLabel"
+                value={formState.linkLabel}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    linkLabel: event.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                placeholder="Ej. Abrir material"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="linkUrl"
+                className="mb-1.5 block text-sm font-semibold text-slate-700"
+              >
+                URL del recurso
+              </label>
+              <input
+                id="linkUrl"
+                type="url"
+                value={formState.linkUrl}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    linkUrl: event.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                placeholder="https://..."
+              />
+            </div>
           </div>
 
           <div>
@@ -143,22 +209,37 @@ export default function AdminMaterialsPage() {
             </label>
             <select
               id="category"
-              value={formState.category}
+              value={formState.categoryKey}
               onChange={(event) =>
                 setFormState((prev) => ({
                   ...prev,
-                  category: event.target.value as MaterialItem["category"],
+                  categoryKey: event.target.value,
                 }))
               }
               className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
             >
-              {Object.entries(categoryLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.key}>
+                  {cat.name}
                 </option>
               ))}
             </select>
           </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={formState.published}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  published: event.target.checked,
+                }))
+              }
+              className="rounded border-slate-300"
+            />
+            Publicar inmediatamente
+          </label>
 
           {errorMessage ? (
             <p className="rounded-xl bg-rose-100 px-3 py-2 text-sm font-semibold text-rose-800">
@@ -168,9 +249,10 @@ export default function AdminMaterialsPage() {
 
           <button
             type="submit"
-            className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae]"
+            disabled={isSubmitting}
+            className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Publicar material
+            {isSubmitting ? "Publicando..." : "Publicar material"}
           </button>
         </form>
       </article>
@@ -179,30 +261,78 @@ export default function AdminMaterialsPage() {
         <h3 className="font-display text-xl text-slate-900">
           Material publicado
         </h3>
-        <ul className="mt-4 grid gap-3">
-          {materials.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-xl border border-slate-200 bg-white p-3 text-sm"
-            >
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="font-semibold text-slate-800">{item.title}</p>
-                <span className="rounded-full bg-[#0066cc]/10 px-2 py-0.5 text-xs font-semibold text-[#0052a6]">
-                  {categoryLabels[item.category]}
-                </span>
-              </div>
-              <p className="text-slate-600">{item.description}</p>
-              <a
-                href={item.driveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-flex text-xs font-semibold text-[#0054aa] hover:underline"
-              >
-                Abrir archivo
-              </a>
-            </li>
-          ))}
-        </ul>
+
+        {isLoading && (
+          <div className="mt-4 grid gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200 bg-white p-3 animate-pulse h-16"
+              />
+            ))}
+          </div>
+        )}
+
+        {!isLoading && loadError && (
+          <p className="mt-4 rounded-xl bg-rose-100 px-3 py-2 text-sm font-semibold text-rose-800">
+            {loadError}
+          </p>
+        )}
+
+        {!isLoading && !loadError && (
+          <ul className="mt-4 grid gap-3">
+            {materials.length === 0 ? (
+              <li className="text-center text-sm text-slate-400 py-6">
+                No hay materiales publicados.
+              </li>
+            ) : (
+              materials.map((item) => (
+                <li
+                  key={item.id}
+                  className="rounded-xl border border-slate-200 bg-white p-3 text-sm"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="font-semibold text-slate-800">{item.title}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-[#0066cc]/10 px-2 py-0.5 text-xs font-semibold text-[#0052a6]">
+                        {item.category.name}
+                      </span>
+                      {!item.published && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                          Borrador
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-slate-600">{item.description}</p>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {item.links.map((link) => (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex text-xs font-semibold text-[#0054aa] hover:underline"
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={deletingId === item.id}
+                      className="text-xs font-semibold text-rose-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {deletingId === item.id ? "Eliminando..." : "Eliminar"}
+                    </button>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
       </article>
     </section>
   );
