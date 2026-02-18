@@ -1,3 +1,4 @@
+import confetti from "canvas-confetti";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 
@@ -22,6 +23,34 @@ export default function StudentExamPage() {
       .catch((error) => setLoadError(normalizeError(error).message))
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!result?.passed) return;
+
+    const duration = 4000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 6,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ["#0066cc", "#00aaff", "#ffffff", "#ffd700"],
+      });
+      confetti({
+        particleCount: 6,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ["#0066cc", "#00aaff", "#ffffff", "#ffd700"],
+      });
+
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+
+    frame();
+  }, [result?.passed]);
 
   const currentQuestion = exam?.questions[questionIndex];
 
@@ -81,6 +110,7 @@ export default function StudentExamPage() {
 
     return (
       <section className="grid gap-6">
+        {/* ── Resultado ───────────────────────────────────────────── */}
         <article className="card-racing-dark p-8">
           <div className="text-center">
             <div className="mb-4 text-6xl">{passed ? "🏆" : "📝"}</div>
@@ -119,6 +149,52 @@ export default function StudentExamPage() {
                 Ver Certificado →
               </Link>
             )}
+          </div>
+        </article>
+
+        {/* ── Revisión de respuestas ──────────────────────────────── */}
+        <article className="card-racing p-6">
+          <h3 className="mb-5 text-xl font-bold text-slate-900">
+            Revisión de respuestas
+          </h3>
+
+          <div className="grid gap-6">
+            {exam.questions.map((question, index) => {
+              const selectedOptionId = answers[question.id];
+
+              return (
+                <div key={question.id}>
+                  <p className="mb-3 font-semibold text-slate-900 leading-relaxed">
+                    <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
+                      {index + 1}
+                    </span>
+                    {question.text}
+                  </p>
+
+                  <div className="grid gap-2 pl-8">
+                    {question.options.map((option) => {
+                      const isSelected = selectedOptionId === option.id;
+
+                      return (
+                        <div
+                          key={option.id}
+                          className={`rounded-lg border px-4 py-3 text-sm font-medium transition-none ${
+                            isSelected
+                              ? "border-blue-500 bg-blue-50 text-blue-900"
+                              : "border-slate-200 bg-slate-50 text-slate-500"
+                          }`}
+                        >
+                          {isSelected && (
+                            <span className="mr-2 text-blue-500">✓</span>
+                          )}
+                          {option.label}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </article>
       </section>
