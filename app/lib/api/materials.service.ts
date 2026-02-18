@@ -31,6 +31,10 @@ export function deleteMaterial(id: string): Promise<void> {
   return apiDelete<void>(`/materials/${id}`);
 }
 
+export function markMaterialViewed(id: string): Promise<void> {
+  return apiPost<void>(`/materials/${id}/view`, {});
+}
+
 export function updateMaterialAccess(
   materialId: string,
   studentId: string,

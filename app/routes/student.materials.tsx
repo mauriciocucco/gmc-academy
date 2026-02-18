@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getMaterials } from "~/lib/api/materials.service";
+import { getMaterials, markMaterialViewed } from "~/lib/api/materials.service";
 import { normalizeError } from "~/lib/api/errors";
 import type { MaterialResponse } from "~/lib/api/types";
 
@@ -129,6 +129,7 @@ export default function StudentMaterialsPage() {
                         target="_blank"
                         rel="noreferrer"
                         className="btn-racing inline-block text-center"
+                        onClick={() => markMaterialViewed(item.id)}
                       >
                         {link.label} →
                       </a>

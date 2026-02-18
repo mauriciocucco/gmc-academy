@@ -1,5 +1,5 @@
 import { apiGet, publicPost } from "./client";
-import type { AuthSession, UserProfile } from "./types";
+import type { AuthSession, StudentProgress, UserProfile } from "./types";
 
 export type LoginDto = {
   email: string;
@@ -16,4 +16,8 @@ export function logout(): Promise<void> {
 
 export function getMe(): Promise<UserProfile> {
   return apiGet<UserProfile>("/me");
+}
+
+export function getMyProgress(): Promise<StudentProgress> {
+  return apiGet<StudentProgress>("/me/progress");
 }

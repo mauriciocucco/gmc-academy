@@ -5,7 +5,7 @@ Guia para agentes de IA que trabajen en este repositorio.
 ## Descripcion del proyecto
 
 Plataforma e-learning para Autoescuela GMC. Dos roles: `student` y `admin`.  
-El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proyecto separado (aun no creado).
+El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proyecto separado.
 
 ## Stack y versiones
 
@@ -35,6 +35,8 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 4. **No modificar** la estructura de carpetas ni la arquitectura existente sin instruccion explicita.
 
 5. **No conectar** al backend real hasta que el proyecto NestJS exista y este documentado aqui.
+
+6. **Marcar material como visto** al hacer click en cualquier link de un material: llamar a `markMaterialViewed(id)` (fire-and-forget).
 
 ## Estructura de rutas
 
@@ -82,8 +84,8 @@ Los servicios tipados estan en `app/lib/api/`:
 | `client.ts`               | Cliente fetch con auth, refresh transparente y manejo de 401 |
 | `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)      |
 | `errors.ts`               | ApiError normalizado                                         |
-| `auth.service.ts`         | login, logout, getMe                                         |
-| `materials.service.ts`    | CRUD de materiales                                           |
+| `auth.service.ts`         | login, logout, getMe, getMyProgress                          |
+| `materials.service.ts`    | CRUD de materiales, markMaterialViewed                       |
 | `exams.service.ts`        | getActiveExam, submitExam                                    |
 | `attempts.service.ts`     | getMyAttempts                                                |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                 |
@@ -124,6 +126,8 @@ GET  /api/v1/exams/active
 POST /api/v1/exams/:id/submit
 GET  /api/v1/attempts/me
 GET  /api/v1/certificates/me/latest
+GET  /api/v1/me/progress          (student)
+POST /api/v1/materials/:id/view   (student)
 GET  /api/v1/admin/students       (admin)
 GET  /api/v1/admin/stats          (admin)
 ```

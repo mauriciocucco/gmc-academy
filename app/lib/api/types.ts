@@ -132,3 +132,12 @@ export type AdminPerformanceItem = {
   attempts: number;
   approvals: number;
 };
+
+// ─── Student Progress ─────────────────────────────────────────────────────────
+
+export type StudentProgress = {
+  materialsTotal: number;
+  materialsViewed: number;
+  examPassed: boolean;
+  certificateIssued: boolean;
+};
