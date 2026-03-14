@@ -1,4 +1,5 @@
 import { apiGet, apiPatch, apiPost } from "./client";
+import { extractArrayResponse } from "./utils/extract-array-response";
 import type {
   AdminExamConfig,
   AdminStudentMaterialAssignment,
@@ -21,8 +22,9 @@ export function getAdminStats(): Promise<AdminStats> {
   return apiGet<AdminStats>("/admin/stats");
 }
 
-export function getAdminStudents(): Promise<AdminStudentItem[]> {
-  return apiGet<AdminStudentItem[]>("/admin/students");
+export async function getAdminStudents(): Promise<AdminStudentItem[]> {
+  const response = await apiGet<unknown>("/admin/students");
+  return extractArrayResponse<AdminStudentItem>(response, "la lista de alumnos");
 }
 
 export function createAdminStudent(
@@ -37,10 +39,14 @@ export function getAdminStudentDetail(
   return apiGet<AdminStudentDetail>(`/admin/students/${studentId}`);
 }
 
-export function getAdminStudentAttempts(
+export async function getAdminStudentAttempts(
   studentId: string,
 ): Promise<AdminStudentAttemptItem[]> {
-  return apiGet<AdminStudentAttemptItem[]>(`/admin/students/${studentId}/attempts`);
+  const response = await apiGet<unknown>(`/admin/students/${studentId}/attempts`);
+  return extractArrayResponse<AdminStudentAttemptItem>(
+    response,
+    "el historial de intentos",
+  );
 }
 
 export function getAdminStudentAttemptDetail(
@@ -57,8 +63,12 @@ export function updateAdminStudentNote(
   return apiPatch<AdminStudentNote>(`/admin/students/${studentId}/note`, dto);
 }
 
-export function getAdminPerformance(): Promise<AdminPerformanceItem[]> {
-  return apiGet<AdminPerformanceItem[]>("/admin/performance");
+export async function getAdminPerformance(): Promise<AdminPerformanceItem[]> {
+  const response = await apiGet<unknown>("/admin/performance");
+  return extractArrayResponse<AdminPerformanceItem>(
+    response,
+    "la serie de performance",
+  );
 }
 
 export function getAdminExamConfig(): Promise<AdminExamConfig> {
@@ -71,28 +81,40 @@ export function updateAdminExam(
   return apiPatch<AdminExamConfig>("/admin/exam", dto);
 }
 
-export function getAdminStudentMaterialAssignments(
+export async function getAdminStudentMaterialAssignments(
   studentId: string,
 ): Promise<AdminStudentMaterialAssignment[]> {
-  return apiGet<AdminStudentMaterialAssignment[]>(
+  const response = await apiGet<unknown>(
     `/admin/students/${studentId}/material-assignments`,
+  );
+  return extractArrayResponse<AdminStudentMaterialAssignment>(
+    response,
+    "las asignaciones de materiales",
   );
 }
 
-export function updateAdminStudentMaterialAssignments(
+export async function updateAdminStudentMaterialAssignments(
   studentId: string,
   dto: UpdateAdminStudentMaterialAssignmentsDto,
 ): Promise<AdminStudentMaterialAssignment[]> {
-  return apiPatch<AdminStudentMaterialAssignment[]>(
+  const response = await apiPatch<unknown>(
     `/admin/students/${studentId}/material-assignments`,
     dto,
   );
+  return extractArrayResponse<AdminStudentMaterialAssignment>(
+    response,
+    "las asignaciones de materiales",
+  );
 }
 
-export function getAdminStudentMaterialsProgress(
+export async function getAdminStudentMaterialsProgress(
   studentId: string,
 ): Promise<AdminStudentMaterialProgressItem[]> {
-  return apiGet<AdminStudentMaterialProgressItem[]>(
+  const response = await apiGet<unknown>(
     `/admin/students/${studentId}/materials-progress`,
+  );
+  return extractArrayResponse<AdminStudentMaterialProgressItem>(
+    response,
+    "el progreso de materiales",
   );
 }
