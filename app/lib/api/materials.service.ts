@@ -1,8 +1,10 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from "./client";
 import type {
+  CreateMaterialCategoryDto,
   CreateMaterialDto,
   MaterialCategory,
   MaterialResponse,
+  UpdateMaterialCategoryDto,
   UpdateMaterialDto,
 } from "./types";
 
@@ -12,6 +14,27 @@ export function getMaterials(): Promise<MaterialResponse[]> {
 
 export function getMaterialCategories(): Promise<MaterialCategory[]> {
   return apiGet<MaterialCategory[]>("/materials/categories");
+}
+
+export function getMaterialCategory(id: string): Promise<MaterialCategory> {
+  return apiGet<MaterialCategory>(`/materials/categories/${id}`);
+}
+
+export function createMaterialCategory(
+  dto: CreateMaterialCategoryDto,
+): Promise<MaterialCategory> {
+  return apiPost<MaterialCategory>("/materials/categories", dto);
+}
+
+export function updateMaterialCategory(
+  id: string,
+  dto: UpdateMaterialCategoryDto,
+): Promise<MaterialCategory> {
+  return apiPatch<MaterialCategory>(`/materials/categories/${id}`, dto);
+}
+
+export function deleteMaterialCategory(id: string): Promise<void> {
+  return apiDelete<void>(`/materials/categories/${id}`);
 }
 
 export function createMaterial(

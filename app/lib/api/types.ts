@@ -37,6 +37,13 @@ export type MaterialCategory = {
   name: string;
 };
 
+export type CreateMaterialCategoryDto = {
+  key: string;
+  name: string;
+};
+
+export type UpdateMaterialCategoryDto = Partial<CreateMaterialCategoryDto>;
+
 export type MaterialLink = {
   id: string;
   label: string;

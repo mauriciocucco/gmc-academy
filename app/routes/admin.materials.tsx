@@ -14,6 +14,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router";
 
 import { AdminMaterialAssignmentSortableItem } from "~/components/admin-material-assignment-sortable-item";
 import {
@@ -205,6 +206,8 @@ export default function AdminMaterialsPage() {
   const unlockedItems = assignmentItems.filter((item) => item.hasAccess);
   const lockedItems = assignmentItems.filter((item) => !item.hasAccess);
   const unlockedCount = assignmentItems.filter((item) => item.hasAccess).length;
+  const hasCategories = categories.length > 0;
+  const showMissingCategoriesState = !isLoading && !loadError && !hasCategories;
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -359,6 +362,24 @@ export default function AdminMaterialsPage() {
         </p>
 
         <form onSubmit={onSubmit} className="mt-5 space-y-3">
+          {showMissingCategoriesState ? (
+            <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50 px-4 py-4">
+              <p className="text-sm font-semibold text-amber-800">
+                Necesitas al menos una categoria para publicar materiales.
+              </p>
+              <p className="mt-1 text-sm text-amber-700">
+                Crea la primera categoria y luego volve a esta pantalla para
+                completar el alta del material.
+              </p>
+              <Link
+                to="/admin/materials/categories"
+                className="mt-3 inline-flex items-center justify-center rounded-xl bg-amber-500 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+              >
+                Crear categoria
+              </Link>
+            </div>
+          ) : null}
+
           <div>
             <label
               htmlFor="title"
@@ -445,43 +466,65 @@ export default function AdminMaterialsPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="category"
-              className="mb-1.5 block text-sm font-semibold text-slate-700"
-            >
-              Categoria
-            </label>
-            <div className="relative">
-              <select
-                id="category"
-                value={formState.categoryKey}
-                onChange={(event) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    categoryKey: event.target.value,
-                  }))
-                }
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <label
+                htmlFor="category"
+                className="block text-sm font-semibold text-slate-700"
               >
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.key}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 20 20"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
+                Categoria
+              </label>
+              <Link
+                to="/admin/materials/categories"
+                className="text-xs font-semibold text-[#0052a6] hover:underline"
+              >
+                Gestionar categorias
+              </Link>
             </div>
+            {isLoading ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                Cargando categorias...
+              </div>
+            ) : hasCategories ? (
+              <div className="relative">
+                <select
+                  id="category"
+                  value={formState.categoryKey}
+                  onChange={(event) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      categoryKey: event.target.value,
+                    }))
+                  }
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.key}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 20 20"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            ) : loadError ? (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                No se pudieron cargar las categorias.
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                No hay categorias disponibles para asignar al material.
+              </div>
+            )}
           </div>
 
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -513,7 +556,7 @@ export default function AdminMaterialsPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoading || !!loadError || !hasCategories}
             className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Publicando..." : "Publicar material"}

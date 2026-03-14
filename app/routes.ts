@@ -15,6 +15,7 @@ export default [
     index("routes/admin.home.tsx"),
     route("exam", "routes/admin.exam.tsx"),
     route("materials", "routes/admin.materials.tsx"),
+    route("materials/categories", "routes/admin.material-categories.tsx"),
     route("students", "routes/admin.students.tsx"),
     route("students/new", "routes/admin.student-create.tsx"),
     route("students/:studentId", "routes/admin.student-detail.tsx"),

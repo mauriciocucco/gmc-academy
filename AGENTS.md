@@ -55,6 +55,7 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 /admin                  → admin.home.tsx         (RequireAuth + RequireRole admin)
 /admin/exam             → admin.exam.tsx
 /admin/materials        → admin.materials.tsx
+/admin/materials/categories → admin.material-categories.tsx
 /admin/students         → admin.students.tsx
 /admin/students/new     → admin.student-create.tsx
 /admin/students/:id     → admin.student-detail.tsx
@@ -90,7 +91,7 @@ Los servicios tipados estan en `app/lib/api/`:
 | `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)           |
 | `errors.ts`               | ApiError normalizado                                              |
 | `auth.service.ts`         | login, logout, getMe, getMyProgress, updateMe, uploadProfilePhoto, changePassword |
-| `materials.service.ts`    | CRUD de materiales, setMaterialViewed, unmarkMaterialViewed       |
+| `materials.service.ts`    | CRUD de materiales y categorias, setMaterialViewed, unmarkMaterialViewed |
 | `exams.service.ts`        | getActiveExam, submitExam                                         |
 | `attempts.service.ts`     | getMyAttempts, getMyAttemptDetail                                 |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                      |
@@ -122,6 +123,11 @@ GET  /api/v1/me
 PATCH /api/v1/me              (student, body: UpdateMeDto)
 POST /api/v1/me/profile-photo (student, multipart file)
 GET  /api/v1/materials
+GET  /api/v1/materials/categories
+GET  /api/v1/materials/categories/:id
+POST /api/v1/materials/categories (admin, body: { key, name })
+PATCH /api/v1/materials/categories/:id (admin, body parcial: { key?, name? })
+DELETE /api/v1/materials/categories/:id (admin)
 POST /api/v1/materials            (admin)
 PATCH /api/v1/materials/:id       (admin)
 DELETE /api/v1/materials/:id      (admin)
@@ -177,6 +183,8 @@ Esta logica esta implementada en `app-shell.tsx` (mini-barra en el header) y en 
 
 - `student` no puede administrar materiales ni ver datos de otros alumnos.
 - `student` solo puede listar y marcar como visto materiales que esten desbloqueados para su usuario.
+- Las categorias de materiales son de lectura para usuario autenticado y solo `admin` puede crearlas, editarlas o eliminarlas.
+- `admin` no puede eliminar una categoria si todavia tiene materiales asociados.
 - Si `mustChangePassword === true`, el usuario autenticado no puede acceder al campus hasta definir su contraseña definitiva.
 - El orden de materiales visible para `student` lo define `admin` por alumno y debe respetarse en `GET /api/v1/materials`.
 - El progreso del alumno debe contar solo los materiales desbloqueados para ese alumno.

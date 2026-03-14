@@ -29,7 +29,7 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 - [x] Progreso del estudiante calculado en backend (`GET /api/v1/me/progress`)
 - [x] Materiales marcados/desmarcados como vistos por el alumno (`PATCH /api/v1/materials/:id/view`)
 - [x] Admin puede desmarcar un material como visto para un alumno (`DELETE /api/v1/materials/:id/view/:studentId`)
-- [x] Panel admin: KPIs reales, configuracion del examen activo, CRUD de materiales real, asignacion de materiales por alumno y ficha de seguimiento por estudiante con nota interna y materiales vistos/pendientes
+- [x] Panel admin: KPIs reales, configuracion del examen activo, CRUD de materiales real, asignacion de materiales por alumno, CRUD de categorias y ficha de seguimiento por estudiante con nota interna y materiales vistos/pendientes
 - [x] Alta de alumnos desde admin con pantalla dedicada y credencial temporal generada por backend
 - [ ] Backend NestJS + PostgreSQL (pendiente — proyecto separado)
 - [ ] QA y despliegue (Fase 7 pendiente)
@@ -81,10 +81,13 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 ## Materiales por alumno
 
 - El admin crea materiales en la biblioteca global y luego define, por alumno, cuales quedan desbloqueados y en que orden se muestran.
+- La vista `/admin/materials/categories` administra las categorias disponibles para el select de materiales.
+- Si no existen categorias, `/admin/materials` bloquea el alta y redirige a la gestion de categorias.
 - El frontend espera `GET /api/v1/admin/students/:id/material-assignments` para leer la asignacion actual del alumno.
 - El frontend guarda cambios con `PATCH /api/v1/admin/students/:id/material-assignments` enviando `{"assignments":[{"materialId":"...","position":1}]}`.
 - `GET /api/v1/materials` debe devolver al alumno solo los materiales desbloqueados para su usuario y ya ordenados por `position`.
 - `GET /api/v1/me/progress` debe calcular `materialsTotal` y `materialsViewed` sobre los materiales desbloqueados para ese alumno.
+- Las categorias nuevas usan el nombre devuelto por backend; si no tienen estilo visual dedicado en `student.materials.tsx`, caen en el esquema visual por defecto.
 
 ## Seguimiento admin por alumno
 
