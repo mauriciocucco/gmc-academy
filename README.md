@@ -75,7 +75,7 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 
 - `POST /api/v1/auth/login` y `GET /api/v1/me` deben devolver `mustChangePassword`.
 - Si `mustChangePassword === true`, el frontend redirige a `/change-password` y bloquea el acceso al resto de rutas protegidas.
-- La pantalla `/change-password` guarda la contraseña definitiva con `PATCH /api/v1/auth/change-password` enviando `{"newPassword":"..."}`.
+- La pantalla `/change-password` guarda la contraseña definitiva con `PATCH /api/v1/me/password` enviando `{"currentPassword":"...","newPassword":"..."}`.
 - Luego del cambio exitoso, el backend debe devolver `mustChangePassword: false` en `GET /api/v1/me`.
 
 ## Materiales por alumno

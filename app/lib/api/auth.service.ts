@@ -23,7 +23,7 @@ export function logout(): Promise<void> {
 }
 
 export function changePassword(dto: ChangePasswordDto): Promise<void> {
-  return apiPatch<void>("/auth/change-password", dto);
+  return apiPatch<void>("/me/password", dto);
 }
 
 export function getMe(): Promise<UserProfile> {

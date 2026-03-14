@@ -9,9 +9,14 @@ import { useAuth } from "~/lib/auth";
 const MIN_PASSWORD_LENGTH = 8;
 
 function validatePasswords(
+  currentPassword: string,
   newPassword: string,
   confirmPassword: string,
 ): string | null {
+  if (!currentPassword) {
+    return "Ingresa tu contraseña actual.";
+  }
+
   if (!newPassword) {
     return "Ingresa una nueva contraseña.";
   }
@@ -33,6 +38,7 @@ function validatePasswords(
 
 function ChangePasswordContent() {
   const { session, refreshSession, signOut } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -52,7 +58,11 @@ function ChangePasswordContent() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const validationError = validatePasswords(newPassword, confirmPassword);
+    const validationError = validatePasswords(
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    );
     if (validationError) {
       setErrorMessage(validationError);
       return;
@@ -63,9 +73,10 @@ function ChangePasswordContent() {
     setSuccessMessage("");
 
     try {
-      await changePassword({ newPassword });
+      await changePassword({ currentPassword, newPassword });
       await refreshSession();
       setSuccessMessage("Contraseña actualizada. Ya puedes ingresar al campus.");
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
@@ -89,7 +100,8 @@ function ChangePasswordContent() {
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-7 text-blue-50/85">
               Entraste con una contraseña temporal generada por la academia.
-              Antes de continuar, debes crear una nueva contraseña personal.
+              Antes de continuar, debes validarla y crear una nueva contraseña
+              personal.
             </p>
 
             <div className="mt-8 grid gap-3">
@@ -104,7 +116,8 @@ function ChangePasswordContent() {
                   Recomendación
                 </p>
                 <p className="mt-2 text-sm text-blue-50/85">
-                  Usa al menos 8 caracteres y evita repetir la contraseña temporal.
+                  Ingresa primero la contraseña temporal actual y luego define
+                  una nueva de al menos 8 caracteres.
                 </p>
               </div>
             </div>
@@ -122,6 +135,19 @@ function ChangePasswordContent() {
           </div>
 
           <form className="grid gap-5" onSubmit={onSubmit}>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Contraseña actual
+              </span>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                placeholder="La contraseña temporal que usaste para entrar"
+                className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+              />
+            </label>
+
             <label className="grid gap-1.5">
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Nueva contraseña

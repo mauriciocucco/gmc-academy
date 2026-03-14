@@ -74,7 +74,7 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 La autenticacion esta integrada con el backend real (`POST /api/v1/auth/login`).
 Los tokens `accessToken` y `refreshToken` se persisten en `localStorage`.
 Al iniciar la app se hidrata la sesion via `GET /api/v1/me`.
-`login` y `me` deben devolver `mustChangePassword`; si llega en `true`, el frontend fuerza `/change-password` hasta completar `PATCH /api/v1/auth/change-password`.
+`login` y `me` deben devolver `mustChangePassword`; si llega en `true`, el frontend fuerza `/change-password` hasta completar `PATCH /api/v1/me/password`.
 
 Credenciales de prueba: `student@gmc.com` / `password` · `admin@gmc.com` / `password`
 
@@ -115,7 +115,7 @@ Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1
 
 ```
 POST /api/v1/auth/login
-PATCH /api/v1/auth/change-password (auth, body: { newPassword })
+PATCH /api/v1/me/password    (auth, body: { currentPassword, newPassword })
 POST /api/v1/auth/refresh
 POST /api/v1/auth/logout
 GET  /api/v1/me
