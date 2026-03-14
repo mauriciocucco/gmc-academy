@@ -43,7 +43,7 @@ h4 {
 
 @layer utilities {
   .card-racing {
-    @apply rounded-xl border border-slate-200 bg-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-1;
+    @apply rounded-xl border border-slate-200 bg-white shadow-lg transition-all hover:shadow-xl;
     background: linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0.9),
@@ -52,12 +52,45 @@ h4 {
   }
 
   .card-racing-dark {
-    @apply rounded-xl border border-gray-800 shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1;
+    @apply rounded-xl border border-gray-800 shadow-xl transition-all hover:shadow-2xl;
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  }
+
+  .card-racing-static {
+    @apply rounded-xl border border-slate-200 bg-white shadow-lg;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.95)
+    );
+  }
+
+  .card-racing-dark-static {
+    @apply rounded-xl border border-gray-800 shadow-xl;
     background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
   }
 
   .btn-racing {
-    @apply cursor-pointer rounded-lg bg-primary text-white px-6 py-2.5 font-bold uppercase tracking-wider shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-95;
+    @apply inline-flex cursor-pointer items-center justify-center gap-3 rounded-xl px-6 py-3 font-bold uppercase tracking-[0.12em] text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0))
+        padding-box,
+      linear-gradient(135deg, #1d80e5 0%, #0066cc 58%, #004da3 100%)
+        border-box;
+    box-shadow:
+      0 14px 24px -16px rgba(0, 102, 204, 0.9),
+      0 6px 14px -10px rgba(15, 23, 42, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  }
+
+  .btn-racing:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 18px 30px -16px rgba(0, 102, 204, 0.95),
+      0 10px 18px -12px rgba(15, 23, 42, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    filter: saturate(1.08);
   }
 
   .progress-bar {

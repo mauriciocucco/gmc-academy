@@ -9,7 +9,7 @@ export default function AdminLayout() {
       <AppShell
         role="admin"
         title="Panel de administracion"
-        subtitle="Gestion de materiales y seguimiento academico"
+        subtitle="Gestion de examen, materiales y seguimiento academico"
       >
         <Outlet />
       </AppShell>

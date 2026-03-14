@@ -27,6 +27,10 @@ export default function LoginPage() {
   }
 
   if (session) {
+    if (session.mustChangePassword) {
+      return <Navigate replace to="/change-password" />;
+    }
+
     return (
       <Navigate replace to={session.role === "admin" ? "/admin" : "/student"} />
     );

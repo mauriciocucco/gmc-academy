@@ -57,6 +57,16 @@ const EN_TO_ES: [RegExp, string][] = [
   [/must be a boolean/i, "El valor debe ser verdadero o falso."],
   [/must be an email/i, "El formato de email no es valido."],
   [/must be a valid url/i, "La URL no es valida."],
+  [/file too large/i, "El archivo es demasiado grande."],
+  [/file is required/i, "Debes seleccionar un archivo."],
+  [
+    /validation failed \(expected type is .+\)/i,
+    "El archivo debe ser una imagen JPG, PNG o WebP valida.",
+  ],
+  [/unsupported media type/i, "El tipo de archivo no es compatible."],
+  [/unexpected field/i, "El archivo enviado no es valido."],
+  [/request entity too large/i, "El archivo es demasiado grande."],
+  [/bad request exception/i, "La solicitud no es valida."],
 ];
 
 function translateMessage(message: string): string {

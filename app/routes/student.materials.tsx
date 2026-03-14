@@ -84,7 +84,7 @@ export default function StudentMaterialsPage() {
 
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark p-6">
+      <article className="card-racing-dark-static p-6">
         <div className="flex items-center gap-4">
           <div className="text-4xl">📚</div>
           <div>
@@ -97,6 +97,18 @@ export default function StudentMaterialsPage() {
           </div>
         </div>
       </article>
+
+      {!isLoading && !errorMessage && materials.length > 0 && (
+        <article className="rounded-2xl border border-[#0066cc]/20 bg-[#0066cc]/8 p-4 text-sm text-slate-700">
+          <p className="font-semibold text-[#0052a6]">
+            Segui el orden asignado por tu instructor.
+          </p>
+          <p className="mt-1 text-slate-600">
+            Los materiales se muestran en el orden en que deberias estudiarlos.
+            Empieza por el Paso 1 y avanza en secuencia.
+          </p>
+        </article>
+      )}
 
       {isLoading && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -124,6 +136,7 @@ export default function StudentMaterialsPage() {
             const categoryKey = item.category.key;
             const colors = categoryColors[categoryKey] ?? defaultColors;
             const isViewed = viewedIds.has(item.id);
+            const displayOrder = index + 1;
 
             return (
               <article
@@ -137,11 +150,16 @@ export default function StudentMaterialsPage() {
 
                 <div className="relative z-10 flex flex-col flex-1">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <span
-                      className={`rounded-full ${colors.badge} px-2.5 py-0.5 text-xs font-bold shadow-sm`}
-                    >
-                      {item.category.name}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-bold text-[#0052a6] shadow-sm">
+                        Paso {displayOrder}
+                      </span>
+                      <span
+                        className={`rounded-full ${colors.badge} px-2.5 py-0.5 text-xs font-bold shadow-sm`}
+                      >
+                        {item.category.name}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2">
                       {item.publishedAt && (
                         <span className="rounded-lg bg-slate-200 px-2 py-1 text-xs font-medium text-slate-600">
@@ -187,7 +205,6 @@ export default function StudentMaterialsPage() {
                           onClick={() => handleMaterialLinkOpen(item.id)}
                         >
                           <span className="truncate">{label}</span>
-                          <span className="shrink-0">→</span>
                         </a>
                       );
                     })}

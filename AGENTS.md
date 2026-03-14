@@ -46,14 +46,18 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 
 ```text
 /login                  → login.tsx
+/change-password        → change-password.tsx   (RequireAuth; forzado si `mustChangePassword === true`)
 /student                → student.home.tsx      (RequireAuth + RequireRole student)
 /student/materials      → student.materials.tsx
 /student/exam           → student.exam.tsx
 /student/certificate    → student.certificate.tsx
 /student/profile        → student.profile.tsx
 /admin                  → admin.home.tsx         (RequireAuth + RequireRole admin)
+/admin/exam             → admin.exam.tsx
 /admin/materials        → admin.materials.tsx
 /admin/students         → admin.students.tsx
+/admin/students/new     → admin.student-create.tsx
+/admin/students/:id     → admin.student-detail.tsx
 ```
 
 ## Convenciones de codigo
@@ -70,6 +74,7 @@ El frontend esta en este repositorio. El backend NestJS + PostgreSQL es un proye
 La autenticacion esta integrada con el backend real (`POST /api/v1/auth/login`).
 Los tokens `accessToken` y `refreshToken` se persisten en `localStorage`.
 Al iniciar la app se hidrata la sesion via `GET /api/v1/me`.
+`login` y `me` deben devolver `mustChangePassword`; si llega en `true`, el frontend fuerza `/change-password` hasta completar `PATCH /api/v1/auth/change-password`.
 
 Credenciales de prueba: `student@gmc.com` / `password` · `admin@gmc.com` / `password`
 
@@ -84,12 +89,12 @@ Los servicios tipados estan en `app/lib/api/`:
 | `client.ts`               | Cliente fetch con auth, refresh transparente y manejo de 401      |
 | `types.ts`                | Tipos compartidos (AuthSession, MaterialResponse, etc.)           |
 | `errors.ts`               | ApiError normalizado                                              |
-| `auth.service.ts`         | login, logout, getMe, getMyProgress, updateMe, uploadProfilePhoto |
+| `auth.service.ts`         | login, logout, getMe, getMyProgress, updateMe, uploadProfilePhoto, changePassword |
 | `materials.service.ts`    | CRUD de materiales, setMaterialViewed, unmarkMaterialViewed       |
 | `exams.service.ts`        | getActiveExam, submitExam                                         |
-| `attempts.service.ts`     | getMyAttempts                                                     |
+| `attempts.service.ts`     | getMyAttempts, getMyAttemptDetail                                 |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                      |
-| `admin.service.ts`        | getAdminStats, getAdminStudents, getAdminPerformance              |
+| `admin.service.ts`        | KPIs admin, alta de alumnos, detalle, notas, materials-progress, intentos, performance, material assignments y configuracion del examen |
 
 Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
 
@@ -110,6 +115,7 @@ Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1
 
 ```
 POST /api/v1/auth/login
+PATCH /api/v1/auth/change-password (auth, body: { newPassword })
 POST /api/v1/auth/refresh
 POST /api/v1/auth/logout
 GET  /api/v1/me
@@ -119,16 +125,36 @@ GET  /api/v1/materials
 POST /api/v1/materials            (admin)
 PATCH /api/v1/materials/:id       (admin)
 DELETE /api/v1/materials/:id      (admin)
+GET  /api/v1/admin/exam                              (admin)
+PATCH /api/v1/admin/exam                             (admin, body: { title, description, passScore, questions: [{ id?, text, position, options: [{ id?, label, isCorrect }] }] })
+POST /api/v1/admin/students                          (admin, body: { fullName, email, phone? }, response: { id, fullName, email, phone, temporaryPassword, mustChangePassword })
+GET  /api/v1/admin/students/:id/material-assignments   (admin)
+PATCH /api/v1/admin/students/:id/material-assignments  (admin, body: { assignments: [{ materialId, position }] })
+GET  /api/v1/admin/students/:id                        (admin)
+PATCH /api/v1/admin/students/:id/note                 (admin, body: { content: string | null })
+GET  /api/v1/admin/students/:id/materials-progress    (admin)
+GET  /api/v1/admin/students/:id/attempts               (admin)
+GET  /api/v1/admin/students/:id/attempts/:attemptId    (admin)
 GET  /api/v1/exams/active
 POST /api/v1/exams/:id/submit
 GET  /api/v1/attempts/me
+GET  /api/v1/attempts/me/:id
 GET  /api/v1/certificates/me/latest
 GET  /api/v1/me/progress          (student)
 PATCH /api/v1/materials/:id/view  (student, body: { viewed: boolean })
 DELETE /api/v1/materials/:id/view/:studentId (admin)
 GET  /api/v1/admin/students       (admin)
 GET  /api/v1/admin/stats          (admin)
+GET  /api/v1/admin/performance    (admin)
 ```
+
+## Examen (frontend)
+
+- La pantalla `/student/exam` consulta `GET /api/v1/attempts/me` para detectar si el alumno ya rindio o aprobo.
+- El alumno puede volver a rendir aunque ya tenga un intento aprobado.
+- La revision detallada se obtiene con `GET /api/v1/attempts/me/:id`, por lo que puede reabrirse aunque el intento haya sido hecho desde otro navegador o sesion.
+- La pantalla `/admin/exam` consume `GET /api/v1/admin/exam` y guarda cambios con `PATCH /api/v1/admin/exam`.
+- El backend debe devolver las opciones con `isCorrect` solo para admin; `GET /api/v1/exams/active` no debe exponer la respuesta correcta al alumno.
 
 ## Calculo de progreso del estudiante
 
@@ -150,7 +176,16 @@ Esta logica esta implementada en `app-shell.tsx` (mini-barra en el header) y en 
 ## Seguridad (reglas de negocio)
 
 - `student` no puede administrar materiales ni ver datos de otros alumnos.
+- `student` solo puede listar y marcar como visto materiales que esten desbloqueados para su usuario.
+- Si `mustChangePassword === true`, el usuario autenticado no puede acceder al campus hasta definir su contraseña definitiva.
+- El orden de materiales visible para `student` lo define `admin` por alumno y debe respetarse en `GET /api/v1/materials`.
+- El progreso del alumno debe contar solo los materiales desbloqueados para ese alumno.
 - `admin` no puede alterar el historico de intentos de examenes.
+- `admin` puede crear alumnos y el backend debe asignar siempre rol `student`.
+- `admin` puede editar el examen activo y el porcentaje de aprobacion, pero cada intento debe conservar el snapshot de preguntas/respuestas usado al rendir.
+- `admin` puede ver progreso, estadisticas, respuestas y datos de contacto del alumno solo desde endpoints protegidos de admin.
+- La nota interna del alumno es solo para `admin` y nunca debe exponerse en endpoints de `student`.
+- La contraseña temporal generada al crear un alumno debe devolverse solo en `POST /api/v1/admin/students` y no quedar expuesta en lecturas posteriores.
 - Las rutas de admin estan protegidas por `RequireRole` en el frontend y por `RolesGuard` en el backend.
 
 ## Documentacion de librerias

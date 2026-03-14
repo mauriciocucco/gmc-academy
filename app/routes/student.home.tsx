@@ -45,7 +45,7 @@ function buildQuickActions(progress: StudentProgress): QuickAction[] {
 
 function ProgressSkeleton() {
   return (
-    <article className="card-racing-dark relative overflow-hidden p-6">
+    <article className="card-racing-dark-static relative overflow-hidden p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="space-y-2">
           <div className="h-7 w-36 animate-pulse rounded bg-white/20" />
@@ -75,7 +75,7 @@ export default function StudentHomePage() {
       {progress === null ? (
         <ProgressSkeleton />
       ) : (
-        <article className="card-racing-dark relative overflow-hidden p-6">
+        <article className="card-racing-dark-static relative overflow-hidden p-6">
           {/* Imagen de fondo sutil */}
           <div
             className="absolute inset-0 opacity-10"
@@ -116,7 +116,7 @@ export default function StudentHomePage() {
       )}
 
       {/* Mensaje de bienvenida */}
-      <article className="card-racing p-6">
+      <article className="card-racing-static p-6">
         <div className="flex items-start gap-4">
           <div className="text-4xl">🚗</div>
           <div>

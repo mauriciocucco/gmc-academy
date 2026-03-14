@@ -1,6 +1,7 @@
 import { apiGet, apiPatch, apiPostMultipart, publicPost } from "./client";
 import type {
   AuthSession,
+  ChangePasswordDto,
   StudentProgress,
   UpdateMeDto,
   UserProfile,
@@ -19,6 +20,10 @@ export function login(dto: LoginDto): Promise<AuthSession> {
 
 export function logout(): Promise<void> {
   return apiGet<void>("/auth/logout");
+}
+
+export function changePassword(dto: ChangePasswordDto): Promise<void> {
+  return apiPatch<void>("/auth/change-password", dto);
 }
 
 export function getMe(): Promise<UserProfile> {

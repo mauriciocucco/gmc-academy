@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 
 import { useAuth, type UserRole } from "~/lib/auth";
@@ -19,6 +25,7 @@ type AppShellProps = {
 type NavItem = {
   label: string;
   to: string;
+  end?: boolean;
 };
 
 const StudentProgressContext = createContext<StudentProgress | null>(null);
@@ -29,15 +36,16 @@ export function useStudentProgress(): StudentProgress | null {
 
 const studentNav: NavItem[] = [
   { label: "Inicio", to: "/student" },
-  { label: "Material", to: "/student/materials" },
+  { label: "Materiales", to: "/student/materials" },
   { label: "Examen", to: "/student/exam" },
   { label: "Certificado", to: "/student/certificate" },
 ];
 
 const adminNav: NavItem[] = [
   { label: "Inicio", to: "/admin" },
-  { label: "Material", to: "/admin/materials" },
-  { label: "Alumnos", to: "/admin/students" },
+  { label: "Examen", to: "/admin/exam" },
+  { label: "Materiales", to: "/admin/materials" },
+  { label: "Alumnos", to: "/admin/students", end: false },
 ];
 
 function navClassName(isActive: boolean) {
@@ -78,7 +86,9 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
     return onStudentProgressUpdated(refreshProgress);
   }, [role, refreshProgress]);
 
-  const progressPct = progress ? getStudentProgressStats(progress).percentage : 0;
+  const progressPct = progress
+    ? getStudentProgressStats(progress).percentage
+    : 0;
 
   return (
     <div className="min-h-screen px-4 pb-6 pt-4 sm:px-6">
@@ -165,7 +175,7 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
           <ul className="flex flex-wrap gap-1">
             {navItems.map((item) => (
               <li key={item.to}>
-                <NavLink to={item.to} end>
+                <NavLink to={item.to} end={item.end ?? true}>
                   {({ isActive }) => (
                     <span className={navClassName(isActive)}>{item.label}</span>
                   )}
@@ -182,7 +192,7 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
         </StudentProgressContext.Provider>
       </div>
 
-      <WhatsAppButton />
+      {role === "student" ? <WhatsAppButton /> : null}
     </div>
   );
 }

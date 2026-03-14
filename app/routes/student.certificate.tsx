@@ -17,6 +17,7 @@ export default function StudentCertificatePage() {
   const [loadError, setLoadError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
+  const [generateSuccess, setGenerateSuccess] = useState("");
 
   useEffect(() => {
     getLatestCertificate()
@@ -37,12 +38,13 @@ export default function StudentCertificatePage() {
 
   const handleGeneratePdf = async () => {
     setGenerateError("");
+    setGenerateSuccess("");
     setIsGenerating(true);
 
     try {
       const { pdfUrl } = await generateCertificatePdf();
       setCertificate((prev) => (prev ? { ...prev, pdfUrl } : prev));
-      window.open(pdfUrl, "_blank");
+      setGenerateSuccess("El PDF fue generado. Puedes abrirlo desde el boton de descarga.");
     } catch (error) {
       setGenerateError(normalizeError(error).message);
     } finally {
@@ -53,8 +55,8 @@ export default function StudentCertificatePage() {
   if (isLoading) {
     return (
       <section className="grid gap-6">
-        <div className="card-racing-dark animate-pulse p-8 h-28" />
-        <div className="card-racing animate-pulse p-8 h-64" />
+        <div className="card-racing-dark-static animate-pulse p-8 h-28" />
+        <div className="card-racing-static animate-pulse p-8 h-64" />
       </section>
     );
   }
@@ -72,7 +74,7 @@ export default function StudentCertificatePage() {
   return (
     <section className="grid gap-6">
       <article
-        className="card-racing-dark p-8"
+        className="card-racing-dark-static p-8"
         style={{ animation: "slide-in 0.6s ease-out" }}
       >
         <div className="flex items-center justify-center gap-4">
@@ -92,7 +94,7 @@ export default function StudentCertificatePage() {
       </article>
 
       {/* ── Certificado (bloqueado o real) ──────────────────────── */}
-      <article className="card-racing relative overflow-hidden p-8">
+      <article className="card-racing-static relative overflow-hidden p-8">
         {/* Overlay de bloqueo cuando no hay certificado */}
         {!certificate && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-900/60 backdrop-blur-[2px]">
@@ -172,6 +174,12 @@ export default function StudentCertificatePage() {
             </p>
           )}
 
+          {generateSuccess && (
+            <p className="mb-4 rounded-xl bg-emerald-100 px-4 py-3 text-center text-sm font-semibold text-emerald-800">
+              {generateSuccess}
+            </p>
+          )}
+
           <div className="flex justify-center gap-3">
             {!certificate ? (
               <button
@@ -202,7 +210,7 @@ export default function StudentCertificatePage() {
                   !isGenerating ? { animation: "glow-pulse 2s infinite" } : {}
                 }
               >
-                {isGenerating ? "Generando PDF..." : "Generar y Descargar PDF"}
+                {isGenerating ? "Generando PDF..." : "Descargar"}
               </button>
             )}
           </div>

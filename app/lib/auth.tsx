@@ -21,8 +21,10 @@ export type UserRole = "student" | "admin";
 export type Session = {
   fullName: string;
   email: string;
+  phone: string | null;
   role: UserRole;
   profilePhotoUrl: string | null;
+  mustChangePassword: boolean;
 };
 
 type SignInInput = {
@@ -44,8 +46,10 @@ function profileToSession(user: UserProfile): Session {
   return {
     fullName: user.fullName,
     email: user.email,
+    phone: user.phone,
     role: user.role,
     profilePhotoUrl: user.profilePhotoUrl,
+    mustChangePassword: user.mustChangePassword,
   };
 }
 

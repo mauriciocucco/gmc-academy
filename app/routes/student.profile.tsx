@@ -8,7 +8,7 @@ export default function StudentProfilePage() {
 
   const [fullName, setFullName] = useState(session?.fullName ?? "");
   const [email, setEmail] = useState(session?.email ?? "");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(session?.phone ?? "");
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     session?.profilePhotoUrl ?? null,
@@ -26,6 +26,7 @@ export default function StudentProfilePage() {
     if (!session) return;
     setFullName(session.fullName);
     setEmail(session.email);
+    setPhone(session.phone ?? "");
     setPhotoPreview(session.profilePhotoUrl);
   }, [session]);
 
@@ -74,7 +75,7 @@ export default function StudentProfilePage() {
 
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark p-6">
+      <article className="card-racing-dark-static p-6">
         <div className="flex items-center gap-4">
           <div className="text-4xl">👤</div>
           <div>
@@ -91,7 +92,7 @@ export default function StudentProfilePage() {
         className="grid gap-5 sm:grid-cols-[auto_1fr]"
       >
         {/* Avatar column */}
-        <article className="card-racing flex flex-col items-center gap-4 p-6 sm:w-52">
+        <article className="card-racing-static flex flex-col items-center gap-4 p-6 sm:w-52">
           <div
             className="relative cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
@@ -127,7 +128,7 @@ export default function StudentProfilePage() {
         </article>
 
         {/* Fields column */}
-        <article className="card-racing flex flex-col gap-5 p-6">
+        <article className="card-racing-static flex flex-col gap-5 p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">

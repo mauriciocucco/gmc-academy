@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 
 import { type UserRole, useAuth } from "~/lib/auth";
 
@@ -17,6 +17,7 @@ function GuardLoading() {
 
 export function RequireAuth({ children }: { children?: ReactNode }) {
   const { isReady, session } = useAuth();
+  const location = useLocation();
 
   if (!isReady) {
     return <GuardLoading />;
@@ -24,6 +25,15 @@ export function RequireAuth({ children }: { children?: ReactNode }) {
 
   if (!session) {
     return <Navigate replace to="/login" />;
+  }
+
+  if (session.mustChangePassword && location.pathname !== "/change-password") {
+    return <Navigate replace to="/change-password" />;
+  }
+
+  if (!session.mustChangePassword && location.pathname === "/change-password") {
+    const fallbackPath = session.role === "admin" ? "/admin" : "/student";
+    return <Navigate replace to={fallbackPath} />;
   }
 
   return children ? <>{children}</> : <Outlet />;
@@ -37,6 +47,7 @@ export function RequireRole({
   children?: ReactNode;
 }) {
   const { isReady, session } = useAuth();
+  const location = useLocation();
 
   if (!isReady) {
     return <GuardLoading />;
@@ -44,6 +55,10 @@ export function RequireRole({
 
   if (!session) {
     return <Navigate replace to="/login" />;
+  }
+
+  if (session.mustChangePassword && location.pathname !== "/change-password") {
+    return <Navigate replace to="/change-password" />;
   }
 
   if (session.role !== role) {
