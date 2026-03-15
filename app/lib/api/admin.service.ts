@@ -10,10 +10,14 @@ import type {
   AdminStudentAttemptItem,
   AdminStudentDetail,
   AdminStudentItem,
+  AdminStudentsPage,
   CreateAdminStudentDto,
   CreatedAdminStudent,
+  GetAdminStudentsParams,
   UpdateAdminStudentNoteDto,
   UpdateAdminStudentMaterialAssignmentsDto,
+  UpdateAdminStudentsAccessDto,
+  UpdateAdminStudentsAccessResponse,
   UpdateAdminExamDto,
   AttemptDetail,
 } from "./types";
@@ -22,9 +26,170 @@ export function getAdminStats(): Promise<AdminStats> {
   return apiGet<AdminStats>("/admin/stats");
 }
 
-export async function getAdminStudents(): Promise<AdminStudentItem[]> {
-  const response = await apiGet<unknown>("/admin/students");
-  return extractArrayResponse<AdminStudentItem>(response, "la lista de alumnos");
+const DEFAULT_ADMIN_STUDENTS_PAGE_SIZE = 100;
+
+function parsePositiveNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : null;
+}
+
+function buildAdminStudentsPath(params: GetAdminStudentsParams = {}): string {
+  const searchParams = new URLSearchParams();
+
+  if (typeof params.page === "number") {
+    searchParams.set("page", String(params.page));
+  }
+
+  if (typeof params.pageSize === "number") {
+    searchParams.set("pageSize", String(params.pageSize));
+  }
+
+  if (params.search?.trim()) {
+    searchParams.set("search", params.search.trim());
+  }
+
+  if (params.status && params.status !== "all") {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.attemptState && params.attemptState !== "all") {
+    searchParams.set("attemptState", params.attemptState);
+  }
+
+  if (params.accessStatus && params.accessStatus !== "all") {
+    searchParams.set("accessStatus", params.accessStatus);
+  }
+
+  const query = searchParams.toString();
+  return query ? `/admin/students?${query}` : "/admin/students";
+}
+
+function extractAdminStudentsPage(value: unknown): AdminStudentsPage {
+  if (Array.isArray(value)) {
+    return {
+      items: value as AdminStudentItem[],
+      page: 1,
+      pageSize: value.length || DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
+      total: value.length,
+      totalPages: 1,
+    };
+  }
+
+  if (value && typeof value === "object") {
+    const maybeWrappedPage = value as {
+      data?: unknown;
+      items?: unknown;
+      results?: unknown;
+      page?: unknown;
+      pageSize?: unknown;
+      total?: unknown;
+      totalPages?: unknown;
+      meta?: {
+        page?: unknown;
+        pageSize?: unknown;
+        total?: unknown;
+        totalPages?: unknown;
+      };
+    };
+
+    const items = extractArrayResponse<AdminStudentItem>(
+      value,
+      "la lista de alumnos",
+    );
+    const page =
+      parsePositiveNumber(maybeWrappedPage.page) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.page) ??
+      1;
+    const pageSize =
+      (parsePositiveNumber(maybeWrappedPage.pageSize) ??
+        parsePositiveNumber(maybeWrappedPage.meta?.pageSize) ??
+        items.length) ||
+      DEFAULT_ADMIN_STUDENTS_PAGE_SIZE;
+    const total =
+      parsePositiveNumber(maybeWrappedPage.total) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.total);
+    const totalPages =
+      parsePositiveNumber(maybeWrappedPage.totalPages) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.totalPages) ??
+      (total !== null ? Math.max(1, Math.ceil(total / pageSize)) : null);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages,
+    };
+  }
+
+  return {
+    items: extractArrayResponse<AdminStudentItem>(value, "la lista de alumnos"),
+    page: 1,
+    pageSize: DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
+    total: null,
+    totalPages: null,
+  };
+}
+
+export async function getAdminStudentsPage(
+  params: GetAdminStudentsParams = {},
+): Promise<AdminStudentsPage> {
+  const response = await apiGet<unknown>(buildAdminStudentsPath(params));
+  return extractAdminStudentsPage(response);
+}
+
+export async function getAdminStudents(
+  params: GetAdminStudentsParams = {},
+): Promise<AdminStudentItem[]> {
+  if (typeof params.page === "number" || typeof params.pageSize === "number") {
+    const response = await getAdminStudentsPage({
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
+      search: params.search,
+      status: params.status,
+      attemptState: params.attemptState,
+      accessStatus: params.accessStatus,
+    });
+
+    return response.items;
+  }
+
+  const firstPage = await getAdminStudentsPage({
+    page: 1,
+    pageSize: DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
+    search: params.search,
+    status: params.status,
+    attemptState: params.attemptState,
+    accessStatus: params.accessStatus,
+  });
+
+  if (!firstPage.totalPages || firstPage.totalPages <= 1) {
+    return firstPage.items;
+  }
+
+  const items = [...firstPage.items];
+
+  for (let page = 2; page <= firstPage.totalPages; page += 1) {
+    const nextPage = await getAdminStudentsPage({
+      page,
+      pageSize: DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
+      search: params.search,
+      status: params.status,
+      attemptState: params.attemptState,
+      accessStatus: params.accessStatus,
+    });
+
+    items.push(...nextPage.items);
+  }
+
+  return items;
+}
+
+export function updateAdminStudentsAccess(
+  dto: UpdateAdminStudentsAccessDto,
+): Promise<UpdateAdminStudentsAccessResponse> {
+  return apiPatch<UpdateAdminStudentsAccessResponse>("/admin/students/access", dto);
 }
 
 export function createAdminStudent(

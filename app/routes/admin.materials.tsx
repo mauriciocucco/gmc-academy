@@ -161,7 +161,11 @@ export default function AdminMaterialsPage() {
   );
 
   useEffect(() => {
-    Promise.all([getMaterials(), getMaterialCategories(), getAdminStudents()])
+    Promise.all([
+      getMaterials(),
+      getMaterialCategories(),
+      getAdminStudents(),
+    ])
       .then(([mats, cats, studentItems]) => {
         setMaterials(mats);
         setCategories(cats);

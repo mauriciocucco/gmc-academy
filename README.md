@@ -29,7 +29,7 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 - [x] Progreso del estudiante calculado en backend (`GET /api/v1/me/progress`)
 - [x] Materiales marcados/desmarcados como vistos por el alumno (`PATCH /api/v1/materials/:id/view`)
 - [x] Admin puede desmarcar un material como visto para un alumno (`DELETE /api/v1/materials/:id/view/:studentId`)
-- [x] Panel admin: KPIs reales, configuracion del examen activo, CRUD de materiales real, asignacion de materiales por alumno, CRUD de categorias y ficha de seguimiento por estudiante con nota interna y materiales vistos/pendientes
+- [x] Panel admin: KPIs reales, configuracion del examen activo, CRUD de materiales real, asignacion de materiales por alumno, CRUD de categorias y ficha de seguimiento por estudiante con nota interna, bloqueo de acceso y materiales vistos/pendientes
 - [x] Alta de alumnos desde admin con pantalla dedicada y credencial temporal generada por backend
 - [ ] Backend NestJS + PostgreSQL (pendiente — proyecto separado)
 - [ ] QA y despliegue (Fase 7 pendiente)
@@ -75,6 +75,7 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 
 - `POST /api/v1/auth/login` y `GET /api/v1/me` deben devolver `mustChangePassword`.
 - Si `mustChangePassword === true`, el frontend redirige a `/change-password` y bloquea el acceso al resto de rutas protegidas.
+- Si el backend responde `403` por usuario bloqueado, el login rechaza el acceso y la sesion no puede refrescarse.
 - La pantalla `/change-password` guarda la contraseña definitiva con `PATCH /api/v1/me/password` enviando `{"currentPassword":"...","newPassword":"..."}`.
 - Luego del cambio exitoso, el backend debe devolver `mustChangePassword: false` en `GET /api/v1/me`.
 
@@ -91,17 +92,19 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 
 ## Seguimiento admin por alumno
 
-- La vista `/admin/students` consume `GET /api/v1/admin/students` para el listado base.
+- La vista `/admin/students` consume `GET /api/v1/admin/students` con `page`, `pageSize`, `search`, `status`, `attemptState` y `accessStatus`.
+- La misma vista bloquea o desbloquea alumnos en lote con `PATCH /api/v1/admin/students/access` enviando `{"studentIds":["..."],"blocked":true,"reason":"..."}`.
 - La vista `/admin/students/new` permite crear un alumno con `POST /api/v1/admin/students`.
 - El backend debe generar la contraseña temporal y devolverla solo en la respuesta del alta junto con `mustChangePassword`.
 - Cada fila navega a `/admin/students/:id` para abrir la ficha completa del alumno.
-- La ficha individual del alumno espera `GET /api/v1/admin/students/:id` con `email`, `phone`, `progress`, `stats` y `note`.
+- La ficha individual del alumno espera `GET /api/v1/admin/students/:id` con `email`, `phone`, `progress`, `stats`, `note`, `blocked`, `blockedAt` y `blockReason`.
 - La misma ficha guarda la nota interna con `PATCH /api/v1/admin/students/:id/note`.
 - La misma ficha consulta `GET /api/v1/admin/students/:id/materials-progress` para listar materiales asignados, ordenados y separados por vistos/pedientes.
 - El historial de examenes se obtiene con `GET /api/v1/admin/students/:id/attempts`.
 - La revision de respuestas por intento se obtiene con `GET /api/v1/admin/students/:id/attempts/:attemptId`.
 - Los botones de contacto usan `mailto:` y `wa.me`, por lo que el telefono debe llegar con prefijo internacional para abrir WhatsApp correctamente.
 - La nota interna es exclusiva de `admin` y no debe exponerse en ningun endpoint de `student`.
+- Si un alumno esta bloqueado, `login`, `refresh` y cualquier endpoint protegido con JWT deben responder `403`.
 
 ## Configuracion del examen admin
 

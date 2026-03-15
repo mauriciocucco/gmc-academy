@@ -40,6 +40,7 @@ const EN_TO_ES: [RegExp, string][] = [
   [/email must be an email/i, "El email no tiene un formato valido."],
   [/email should not be empty/i, "El email es obligatorio."],
   [/invalid credentials/i, "Credenciales incorrectas."],
+  [/blocked/i, "Tu acceso fue bloqueado. Contacta al administrador."],
   [/unauthorized/i, "No autorizado. Verifica tus credenciales."],
   [/forbidden/i, "No tienes permiso para realizar esta accion."],
   [/not found/i, "El recurso solicitado no existe."],

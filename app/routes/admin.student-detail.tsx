@@ -499,9 +499,15 @@ export default function AdminStudentDetailPage() {
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${studentDetail.approved ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
                       {studentDetail.approved ? "Aprobado" : "Pendiente"}
                     </span>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${studentDetail.blocked ? "bg-rose-100 text-rose-800" : "bg-blue-100 text-blue-800"}`}>
+                      {studentDetail.blocked ? "Bloqueado" : "Acceso activo"}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm text-slate-500">{studentDetail.email}</p>
                   <p className="mt-1 text-sm text-slate-500">{studentDetail.phone ?? "Telefono no disponible"}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Ultimo cambio de acceso: {formatDateTime(studentDetail.blockedAt)}
+                  </p>
                 </div>
               </div>
 
@@ -540,6 +546,25 @@ export default function AdminStudentDetailPage() {
                 {detailError}
               </p>
             ) : null}
+
+            {studentDetail.blocked ? (
+              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-900">
+                <p className="font-semibold">Acceso bloqueado</p>
+                <p className="mt-1">
+                  Este alumno no puede iniciar sesion ni usar endpoints protegidos.
+                </p>
+                <p className="mt-2">
+                  Motivo: {studentDetail.blockReason?.trim() ? studentDetail.blockReason : "Sin motivo registrado."}
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-4 text-sm text-blue-900">
+                <p className="font-semibold">Acceso habilitado</p>
+                <p className="mt-1">
+                  El alumno puede ingresar al campus con sus credenciales vigentes.
+                </p>
+              </div>
+            )}
           </article>
 
           <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">

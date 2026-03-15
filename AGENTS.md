@@ -95,22 +95,9 @@ Los servicios tipados estan en `app/lib/api/`:
 | `exams.service.ts`        | getActiveExam, submitExam                                         |
 | `attempts.service.ts`     | getMyAttempts, getMyAttemptDetail                                 |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                      |
-| `admin.service.ts`        | KPIs admin, alta de alumnos, detalle, notas, materials-progress, intentos, performance, material assignments y configuracion del examen |
+| `admin.service.ts`        | KPIs admin, alta de alumnos, detalle, notas, bloqueo/desbloqueo, materials-progress, intentos, performance, material assignments y configuracion del examen |
 
 Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
-
-## Fases del proyecto
-
-| Fase | Descripcion                         | Estado     |
-| ---- | ----------------------------------- | ---------- |
-| 0    | Shell frontend con rutas y layout   | Completada |
-| 1    | Backend NestJS base + PostgreSQL    | Pendiente  |
-| 2    | Login real + sesion JWT             | Completada |
-| 3    | CRUD materiales real                | Completada |
-| 4    | Examen con persistencia de intentos | Completada |
-| 5    | Certificado PDF                     | Completada |
-| 6    | Panel admin con KPIs reales         | Completada |
-| 7    | QA y despliegue                     | Pendiente  |
 
 ## API
 
@@ -134,9 +121,11 @@ DELETE /api/v1/materials/:id      (admin)
 GET  /api/v1/admin/exam                              (admin)
 PATCH /api/v1/admin/exam                             (admin, body: { title, description, passScore, questions: [{ id?, text, position, options: [{ id?, label, isCorrect }] }] })
 POST /api/v1/admin/students                          (admin, body: { fullName, email, phone? }, response: { id, fullName, email, phone, temporaryPassword, mustChangePassword })
+GET  /api/v1/admin/students                          (admin, query: { page?, pageSize?, search?, status?, attemptState?, accessStatus? })
+PATCH /api/v1/admin/students/access                  (admin, body: { studentIds: string[], blocked: boolean, reason?: string | null })
 GET  /api/v1/admin/students/:id/material-assignments   (admin)
 PATCH /api/v1/admin/students/:id/material-assignments  (admin, body: { assignments: [{ materialId, position }] })
-GET  /api/v1/admin/students/:id                        (admin)
+GET  /api/v1/admin/students/:id                        (admin, incluye `blocked`, `blockedAt`, `blockReason`)
 PATCH /api/v1/admin/students/:id/note                 (admin, body: { content: string | null })
 GET  /api/v1/admin/students/:id/materials-progress    (admin)
 GET  /api/v1/admin/students/:id/attempts               (admin)
@@ -149,7 +138,6 @@ GET  /api/v1/certificates/me/latest
 GET  /api/v1/me/progress          (student)
 PATCH /api/v1/materials/:id/view  (student, body: { viewed: boolean })
 DELETE /api/v1/materials/:id/view/:studentId (admin)
-GET  /api/v1/admin/students       (admin)
 GET  /api/v1/admin/stats          (admin)
 GET  /api/v1/admin/performance    (admin)
 ```
@@ -193,6 +181,8 @@ Esta logica esta implementada en `app-shell.tsx` (mini-barra en el header) y en 
 - `admin` puede editar el examen activo y el porcentaje de aprobacion, pero cada intento debe conservar el snapshot de preguntas/respuestas usado al rendir.
 - `admin` puede ver progreso, estadisticas, respuestas y datos de contacto del alumno solo desde endpoints protegidos de admin.
 - La nota interna del alumno es solo para `admin` y nunca debe exponerse en endpoints de `student`.
+- Si un alumno esta bloqueado, `login`, `refresh` y cualquier endpoint con JWT deben responder `403`.
+- `admin` puede bloquear o desbloquear alumnos; al desbloquear se limpian `blockedAt` y `blockReason`.
 - La contraseña temporal generada al crear un alumno debe devolverse solo en `POST /api/v1/admin/students` y no quedar expuesta en lecturas posteriores.
 - Las rutas de admin estan protegidas por `RequireRole` en el frontend y por `RolesGuard` en el backend.
 

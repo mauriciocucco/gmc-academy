@@ -214,12 +214,47 @@ export type AdminStats = {
   averageScore: number;
 };
 
+export type AdminStudentStatusFilter = "all" | "approved" | "pending";
+
+export type AdminStudentAttemptStateFilter =
+  | "all"
+  | "with-attempt"
+  | "without-attempt";
+
+export type AdminStudentAccessStatusFilter = "all" | "active" | "blocked";
+
+export type GetAdminStudentsParams = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: AdminStudentStatusFilter;
+  attemptState?: AdminStudentAttemptStateFilter;
+  accessStatus?: AdminStudentAccessStatusFilter;
+};
+
+export type AdminStudentsPage = {
+  items: AdminStudentItem[];
+  page: number;
+  pageSize: number;
+  total: number | null;
+  totalPages: number | null;
+};
+
+export type AdminStudentAccessState = {
+  id: string;
+  blocked: boolean;
+  blockedAt: string | null;
+  blockReason: string | null;
+};
+
 export type AdminStudentItem = {
   id: string;
   fullName: string;
   email: string;
   lastAttemptScore: number | null;
   approved: boolean;
+  blocked: boolean;
+  blockedAt: string | null;
 };
 
 export type CreateAdminStudentDto = {
@@ -275,6 +310,9 @@ export type AdminStudentDetail = {
   phone: string | null;
   profilePhotoUrl: string | null;
   approved: boolean;
+  blocked: boolean;
+  blockedAt: string | null;
+  blockReason: string | null;
   lastAttemptScore: number | null;
   progress: StudentProgress;
   stats: AdminStudentStats;
@@ -285,6 +323,16 @@ export type AdminStudentAttemptItem = AttemptItem;
 
 export type UpdateAdminStudentNoteDto = {
   content: string | null;
+};
+
+export type UpdateAdminStudentsAccessDto = {
+  studentIds: string[];
+  blocked: boolean;
+  reason?: string | null;
+};
+
+export type UpdateAdminStudentsAccessResponse = {
+  items: AdminStudentAccessState[];
 };
 
 export type AdminStudentMaterialProgressItem = {
