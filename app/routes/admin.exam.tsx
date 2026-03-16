@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   getAdminExamConfig,
+  getAdminExamQuestionsPage,
   updateAdminExam,
 } from "~/lib/api/admin.service";
 import { normalizeError } from "~/lib/api/errors";
 import type {
   AdminExamConfig,
+  AdminExamQuestionsPage,
   AdminExamOption,
   AdminExamQuestion,
+  PaginationMeta,
   UpdateAdminExamDto,
 } from "~/lib/api/types";
 
@@ -33,7 +36,13 @@ type ExamDraft = {
   questions: ExamQuestionDraft[];
 };
 
+type VisibleQuestionEntry = {
+  question: ExamQuestionDraft;
+  globalIndex: number;
+};
+
 const MIN_OPTIONS_PER_QUESTION = 2;
+const QUESTIONS_PER_PAGE = 10;
 
 function createClientId(): string {
   return crypto.randomUUID();
@@ -192,7 +201,76 @@ function getOptionTag(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
+function normalizeSearchTerm(value: string): string {
+  return value.trim().toLocaleLowerCase("es");
+}
+
+function questionMatchesSearch(
+  question: Pick<ExamQuestionDraft, "text" | "options">,
+  searchQuery: string,
+): boolean {
+  const normalizedQuery = normalizeSearchTerm(searchQuery);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const haystacks = [question.text, ...question.options.map((option) => option.label)];
+  return haystacks.some((value) =>
+    value.toLocaleLowerCase("es").includes(normalizedQuery),
+  );
+}
+
+function buildLocalQuestionEntries(
+  questions: ExamQuestionDraft[],
+  searchQuery: string,
+): VisibleQuestionEntry[] {
+  return questions.flatMap((question, globalIndex) =>
+    questionMatchesSearch(question, searchQuery)
+      ? [{ question, globalIndex }]
+      : [],
+  );
+}
+
+function paginateQuestionEntries(
+  entries: VisibleQuestionEntry[],
+  page: number,
+  pageSize: number,
+): { items: VisibleQuestionEntry[]; meta: PaginationMeta } {
+  const totalItems = entries.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+
+  return {
+    items: entries.slice(startIndex, startIndex + pageSize),
+    meta: {
+      page: safePage,
+      pageSize,
+      totalItems,
+      totalPages,
+    },
+  };
+}
+
+function buildRemoteVisibleQuestionEntries(
+  questions: ExamQuestionDraft[],
+  remotePage: AdminExamQuestionsPage,
+): VisibleQuestionEntry[] {
+  return remotePage.items.flatMap((question) => {
+    const globalIndex = questions.findIndex(
+      (draftQuestion) => draftQuestion.id === question.id,
+    );
+
+    return globalIndex >= 0
+      ? [{ question: questions[globalIndex], globalIndex }]
+      : [];
+  });
+}
+
 export default function AdminExamPage() {
+  const questionRequestRef = useRef(0);
+  const hasLoadedQuestionPageRef = useRef(false);
   const [draft, setDraft] = useState<ExamDraft | null>(null);
   const [savedDraft, setSavedDraft] = useState<ExamDraft | null>(null);
   const [examConfig, setExamConfig] = useState<AdminExamConfig | null>(null);
@@ -201,6 +279,37 @@ export default function AdminExamPage() {
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [questionSearchQuery, setQuestionSearchQuery] = useState("");
+  const [questionCurrentPage, setQuestionCurrentPage] = useState(1);
+  const [questionPage, setQuestionPage] = useState<AdminExamQuestionsPage | null>(
+    null,
+  );
+  const [questionListError, setQuestionListError] = useState("");
+  const [isQuestionsRefreshing, setIsQuestionsRefreshing] = useState(false);
+
+  const isDirty =
+    draft !== null &&
+    savedDraft !== null &&
+    JSON.stringify(draft) !== JSON.stringify(savedDraft);
+  const localQuestionPage = paginateQuestionEntries(
+    buildLocalQuestionEntries(draft?.questions ?? [], questionSearchQuery),
+    questionCurrentPage,
+    QUESTIONS_PER_PAGE,
+  );
+  const shouldUseLocalQuestionPage =
+    isDirty || questionPage === null || questionListError.length > 0;
+  const remoteQuestionMeta = questionPage?.meta ?? localQuestionPage.meta;
+  const remoteVisibleQuestionEntries =
+    questionPage !== null
+      ? buildRemoteVisibleQuestionEntries(draft?.questions ?? [], questionPage)
+      : [];
+  const effectiveQuestionMeta = shouldUseLocalQuestionPage
+    ? localQuestionPage.meta
+    : remoteQuestionMeta;
+  const visibleQuestionEntries = shouldUseLocalQuestionPage
+    ? localQuestionPage.items
+    : remoteVisibleQuestionEntries;
+  const isQuestionSearchActive = questionSearchQuery.trim().length > 0;
 
   useEffect(() => {
     let isMounted = true;
@@ -217,6 +326,8 @@ export default function AdminExamPage() {
         setExamConfig(response);
         setDraft(mappedDraft);
         setSavedDraft(mappedDraft);
+        setQuestionPage(null);
+        setQuestionListError("");
         setLoadError("");
       } catch (error) {
         if (!isMounted) {
@@ -226,6 +337,8 @@ export default function AdminExamPage() {
         setDraft(null);
         setSavedDraft(null);
         setExamConfig(null);
+        setQuestionPage(null);
+        setQuestionListError("");
         setLoadError(normalizeError(error).message);
       } finally {
         if (isMounted) {
@@ -246,6 +359,80 @@ export default function AdminExamPage() {
     setSaveError("");
     setSaveSuccess("");
   }
+
+  useEffect(() => {
+    setQuestionCurrentPage(1);
+  }, [questionSearchQuery]);
+
+  useEffect(() => {
+    if (questionCurrentPage > effectiveQuestionMeta.totalPages) {
+      setQuestionCurrentPage(effectiveQuestionMeta.totalPages);
+    }
+  }, [effectiveQuestionMeta.totalPages, questionCurrentPage]);
+
+  useEffect(() => {
+    if (isLoading || !draft || !examConfig || isDirty) {
+      setIsQuestionsRefreshing(false);
+      return;
+    }
+
+    let isMounted = true;
+    const requestId = questionRequestRef.current + 1;
+    questionRequestRef.current = requestId;
+
+    async function loadQuestionPage() {
+      if (hasLoadedQuestionPageRef.current) {
+        setIsQuestionsRefreshing(true);
+      } else {
+        setQuestionListError("");
+      }
+
+      try {
+        const response = await getAdminExamQuestionsPage({
+          page: questionCurrentPage,
+          pageSize: QUESTIONS_PER_PAGE,
+          search: questionSearchQuery,
+        });
+
+        if (!isMounted || questionRequestRef.current !== requestId) {
+          return;
+        }
+
+        if (questionCurrentPage > response.meta.totalPages) {
+          setQuestionCurrentPage(response.meta.totalPages);
+          return;
+        }
+
+        setQuestionPage(response);
+        setQuestionListError("");
+      } catch (error) {
+        if (!isMounted || questionRequestRef.current !== requestId) {
+          return;
+        }
+
+        setQuestionPage(null);
+        setQuestionListError(normalizeError(error).message);
+      } finally {
+        if (isMounted && questionRequestRef.current === requestId) {
+          hasLoadedQuestionPageRef.current = true;
+          setIsQuestionsRefreshing(false);
+        }
+      }
+    }
+
+    void loadQuestionPage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    draft,
+    examConfig,
+    isDirty,
+    isLoading,
+    questionCurrentPage,
+    questionSearchQuery,
+  ]);
 
   async function handleSave() {
     if (!draft) {
@@ -270,12 +457,29 @@ export default function AdminExamPage() {
       setExamConfig(response);
       setDraft(mappedDraft);
       setSavedDraft(mappedDraft);
+      setQuestionPage(null);
       setSaveSuccess("Configuracion del examen guardada.");
     } catch (error) {
       setSaveError(normalizeError(error).message);
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleAddQuestion() {
+    if (!draft) {
+      return;
+    }
+
+    const nextQuestions = [...draft.questions, createQuestionDraft()];
+    setQuestionSearchQuery("");
+    setQuestionCurrentPage(
+      Math.max(1, Math.ceil(nextQuestions.length / QUESTIONS_PER_PAGE)),
+    );
+    updateDraftState((current) => ({
+      ...current,
+      questions: nextQuestions,
+    }));
   }
 
   if (isLoading) {
@@ -314,8 +518,6 @@ export default function AdminExamPage() {
     examConfig?.updatedAt ?? null,
     examConfig?.updatedByName ?? null,
   );
-  const isDirty =
-    savedDraft !== null && JSON.stringify(draft) !== JSON.stringify(savedDraft);
 
   return (
     <section className="grid gap-4">
@@ -464,25 +666,84 @@ export default function AdminExamPage() {
 
             <button
               type="button"
-              onClick={() =>
-                updateDraftState((current) => ({
-                  ...current,
-                  questions: [...current.questions, createQuestionDraft()],
-                }))
-              }
+              onClick={handleAddQuestion}
               className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae]"
             >
               Agregar pregunta
             </button>
           </div>
 
+          <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Buscar
+              </span>
+              <input
+                type="search"
+                value={questionSearchQuery}
+                onChange={(event) => setQuestionSearchQuery(event.target.value)}
+                placeholder="Texto de la pregunta u opciones"
+                className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+              />
+            </label>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {shouldUseLocalQuestionPage && isDirty ? (
+                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-amber-800">
+                  Vista local
+                </span>
+              ) : null}
+              {isQuestionsRefreshing ? (
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-500">
+                  Actualizando
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <span>{effectiveQuestionMeta.totalItems} resultados</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {isQuestionSearchActive ? (
+                <span>Desactiva la busqueda para reordenar.</span>
+              ) : null}
+              {isQuestionSearchActive ? (
+                <button
+                  type="button"
+                  onClick={() => setQuestionSearchQuery("")}
+                  className="rounded-full border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-[#0066cc]/30 hover:text-[#0052a6]"
+                >
+                  Limpiar busqueda
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          {questionListError ? (
+            <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+              No se pudo refrescar la pagina desde backend. Se muestra una vista
+              local temporal.
+            </p>
+          ) : null}
+
+          {shouldUseLocalQuestionPage && isDirty ? (
+            <p className="mt-4 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
+              Los cambios sin guardar se filtran y paginan localmente hasta que
+              guardes el examen.
+            </p>
+          ) : null}
+
           {draft.questions.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
               Aun no hay preguntas cargadas. Agrega la primera para armar el examen.
             </div>
+          ) : visibleQuestionEntries.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
+              No hay preguntas que coincidan con la busqueda actual.
+            </div>
           ) : (
             <div className="mt-6 grid gap-4">
-              {draft.questions.map((question, questionIndex) => (
+              {visibleQuestionEntries.map(({ question, globalIndex }) => (
                 <div
                   key={question.clientId}
                   className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
@@ -490,7 +751,7 @@ export default function AdminExamPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
-                        Pregunta {questionIndex + 1}
+                        Pregunta {globalIndex + 1}
                       </p>
                       <p className="mt-1 text-sm text-slate-500">
                         Marca una sola opcion correcta.
@@ -503,14 +764,14 @@ export default function AdminExamPage() {
                         onClick={() =>
                           updateDraftState((current) => {
                             const nextQuestions = [...current.questions];
-                            const previousQuestion = nextQuestions[questionIndex - 1];
+                            const previousQuestion = nextQuestions[globalIndex - 1];
 
                             if (!previousQuestion) {
                               return current;
                             }
 
-                            nextQuestions[questionIndex - 1] = question;
-                            nextQuestions[questionIndex] = previousQuestion;
+                            nextQuestions[globalIndex - 1] = question;
+                            nextQuestions[globalIndex] = previousQuestion;
 
                             return {
                               ...current,
@@ -518,7 +779,7 @@ export default function AdminExamPage() {
                             };
                           })
                         }
-                        disabled={questionIndex === 0}
+                        disabled={isQuestionSearchActive || globalIndex === 0}
                         className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         Subir
@@ -528,14 +789,14 @@ export default function AdminExamPage() {
                         onClick={() =>
                           updateDraftState((current) => {
                             const nextQuestions = [...current.questions];
-                            const nextQuestion = nextQuestions[questionIndex + 1];
+                            const nextQuestion = nextQuestions[globalIndex + 1];
 
                             if (!nextQuestion) {
                               return current;
                             }
 
-                            nextQuestions[questionIndex + 1] = question;
-                            nextQuestions[questionIndex] = nextQuestion;
+                            nextQuestions[globalIndex + 1] = question;
+                            nextQuestions[globalIndex] = nextQuestion;
 
                             return {
                               ...current,
@@ -543,7 +804,10 @@ export default function AdminExamPage() {
                             };
                           })
                         }
-                        disabled={questionIndex === draft.questions.length - 1}
+                        disabled={
+                          isQuestionSearchActive ||
+                          globalIndex === draft.questions.length - 1
+                        }
                         className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         Bajar
@@ -717,6 +981,41 @@ export default function AdminExamPage() {
               ))}
             </div>
           )}
+
+          {effectiveQuestionMeta.totalItems > 0 ? (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+              <p className="text-sm text-slate-500">
+                Pagina {questionCurrentPage} de {effectiveQuestionMeta.totalPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQuestionCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={questionCurrentPage === 1 || isQuestionsRefreshing}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQuestionCurrentPage((page) =>
+                      Math.min(effectiveQuestionMeta.totalPages, page + 1),
+                    )
+                  }
+                  disabled={
+                    questionCurrentPage === effectiveQuestionMeta.totalPages ||
+                    isQuestionsRefreshing
+                  }
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           {saveError ? (
             <p className="mt-4 rounded-2xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-800">

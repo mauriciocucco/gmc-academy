@@ -29,7 +29,7 @@ Plataforma e-learning para Autoescuela GMC. MVP con autenticacion por rol, mater
 - [x] Progreso del estudiante calculado en backend (`GET /api/v1/me/progress`)
 - [x] Materiales marcados/desmarcados como vistos por el alumno (`PATCH /api/v1/materials/:id/view`)
 - [x] Admin puede desmarcar un material como visto para un alumno (`DELETE /api/v1/materials/:id/view/:studentId`)
-- [x] Panel admin: KPIs reales, configuracion del examen activo, CRUD de materiales real, asignacion de materiales por alumno, CRUD de categorias y ficha de seguimiento por estudiante con nota interna, bloqueo de acceso y materiales vistos/pendientes
+- [x] Panel admin: KPIs reales, configuracion del examen activo con banco de preguntas filtrable/paginado, CRUD de materiales real con biblioteca filtrable/paginada, asignacion de materiales por alumno, CRUD de categorias y ficha de seguimiento por estudiante con nota interna, bloqueo de acceso y materiales vistos/pendientes
 - [x] Alta de alumnos desde admin con pantalla dedicada y credencial temporal generada por backend
 - [ ] Backend NestJS + PostgreSQL (pendiente — proyecto separado)
 - [ ] QA y despliegue (Fase 7 pendiente)
@@ -82,6 +82,8 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 ## Materiales por alumno
 
 - El admin crea materiales en la biblioteca global y luego define, por alumno, cuales quedan desbloqueados y en que orden se muestran.
+- La biblioteca de `/admin/materials` consume `GET /api/v1/admin/materials` con `page`, `pageSize`, `search`, `categoryId` y `publishedStatus`.
+- La misma vista ahora resuelve la asignacion masiva por material, permite editar materiales existentes y confirma la eliminacion antes de borrarlos; el orden y desbloqueo fino viven en `/admin/students/:id`.
 - La vista `/admin/materials/categories` administra las categorias disponibles para el select de materiales.
 - Si no existen categorias, `/admin/materials` bloquea el alta y redirige a la gestion de categorias.
 - El frontend espera `GET /api/v1/admin/students/:id/material-assignments` para leer la asignacion actual del alumno.
@@ -109,6 +111,7 @@ Ver [docs/plans/2026-02-16-gmc-elearning-design.md](docs/plans/2026-02-16-gmc-el
 ## Configuracion del examen admin
 
 - La vista `/admin/exam` consume `GET /api/v1/admin/exam` para leer el examen activo editable.
+- La lista de preguntas en `/admin/exam` consume `GET /api/v1/admin/exam/questions` con `page`, `pageSize` y `search`.
 - La misma vista guarda cambios con `PATCH /api/v1/admin/exam`.
 - El payload esperado incluye `title`, `description`, `passScore` y `questions`, donde cada pregunta envia `position` y `options` con `isCorrect`.
 - El backend debe devolver `updatedAt` y `updatedByName` para mostrar trazabilidad de cambios.

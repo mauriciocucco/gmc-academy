@@ -2,6 +2,10 @@ import { apiGet, apiPatch, apiPost } from "./client";
 import { extractArrayResponse } from "./utils/extract-array-response";
 import type {
   AdminExamConfig,
+  AdminExamQuestionsPage,
+  AdminExamQuestion,
+  AdminMaterialsPage,
+  PaginationMeta,
   AdminStudentMaterialAssignment,
   AdminStudentMaterialProgressItem,
   AdminStudentNote,
@@ -13,6 +17,8 @@ import type {
   AdminStudentsPage,
   CreateAdminStudentDto,
   CreatedAdminStudent,
+  GetAdminExamQuestionsParams,
+  GetAdminMaterialsParams,
   GetAdminStudentsParams,
   UpdateAdminStudentNoteDto,
   UpdateAdminStudentMaterialAssignmentsDto,
@@ -27,11 +33,70 @@ export function getAdminStats(): Promise<AdminStats> {
 }
 
 const DEFAULT_ADMIN_STUDENTS_PAGE_SIZE = 100;
+const DEFAULT_ADMIN_MATERIALS_PAGE_SIZE = 100;
+const DEFAULT_ADMIN_EXAM_QUESTIONS_PAGE_SIZE = 10;
 
 function parsePositiveNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) && value > 0
     ? value
     : null;
+}
+
+function extractPaginationMeta(
+  value: unknown,
+  fallbackItemsLength: number,
+  fallbackPageSize: number,
+): PaginationMeta {
+  if (value && typeof value === "object") {
+    const maybeWrappedPage = value as {
+      page?: unknown;
+      pageSize?: unknown;
+      total?: unknown;
+      totalItems?: unknown;
+      totalPages?: unknown;
+      meta?: {
+        page?: unknown;
+        pageSize?: unknown;
+        total?: unknown;
+        totalItems?: unknown;
+        totalPages?: unknown;
+      };
+    };
+
+    const page =
+      parsePositiveNumber(maybeWrappedPage.page) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.page) ??
+      1;
+    const pageSize =
+      (parsePositiveNumber(maybeWrappedPage.pageSize) ??
+        parsePositiveNumber(maybeWrappedPage.meta?.pageSize) ??
+        fallbackItemsLength) ||
+      fallbackPageSize;
+    const totalItems =
+      parsePositiveNumber(maybeWrappedPage.totalItems) ??
+      parsePositiveNumber(maybeWrappedPage.total) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.totalItems) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.total) ??
+      fallbackItemsLength;
+    const totalPages =
+      parsePositiveNumber(maybeWrappedPage.totalPages) ??
+      parsePositiveNumber(maybeWrappedPage.meta?.totalPages) ??
+      Math.max(1, Math.ceil(totalItems / pageSize));
+
+    return {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+    };
+  }
+
+  return {
+    page: 1,
+    pageSize: fallbackItemsLength || fallbackPageSize,
+    totalItems: fallbackItemsLength,
+    totalPages: 1,
+  };
 }
 
 function buildAdminStudentsPath(params: GetAdminStudentsParams = {}): string {
@@ -63,6 +128,56 @@ function buildAdminStudentsPath(params: GetAdminStudentsParams = {}): string {
 
   const query = searchParams.toString();
   return query ? `/admin/students?${query}` : "/admin/students";
+}
+
+function buildAdminMaterialsPath(params: GetAdminMaterialsParams = {}): string {
+  const searchParams = new URLSearchParams();
+
+  if (typeof params.page === "number") {
+    searchParams.set("page", String(params.page));
+  }
+
+  if (typeof params.pageSize === "number") {
+    searchParams.set("pageSize", String(params.pageSize));
+  }
+
+  if (params.search?.trim()) {
+    searchParams.set("search", params.search.trim());
+  }
+
+  if (params.categoryId?.trim()) {
+    searchParams.set("categoryId", params.categoryId.trim());
+  }
+
+  if (params.publishedStatus && params.publishedStatus !== "all") {
+    searchParams.set("publishedStatus", params.publishedStatus);
+  }
+
+  const query = searchParams.toString();
+  return query ? `/admin/materials?${query}` : "/admin/materials";
+}
+
+function buildAdminExamQuestionsPath(
+  params: GetAdminExamQuestionsParams = {},
+): string {
+  const searchParams = new URLSearchParams();
+
+  if (typeof params.page === "number") {
+    searchParams.set("page", String(params.page));
+  }
+
+  if (typeof params.pageSize === "number") {
+    searchParams.set("pageSize", String(params.pageSize));
+  }
+
+  if (params.search?.trim()) {
+    searchParams.set("search", params.search.trim());
+  }
+
+  const query = searchParams.toString();
+  return query
+    ? `/admin/exam/questions?${query}`
+    : "/admin/exam/questions";
 }
 
 function extractAdminStudentsPage(value: unknown): AdminStudentsPage {
@@ -129,6 +244,74 @@ function extractAdminStudentsPage(value: unknown): AdminStudentsPage {
     pageSize: DEFAULT_ADMIN_STUDENTS_PAGE_SIZE,
     total: null,
     totalPages: null,
+  };
+}
+
+function extractAdminMaterialsPage(value: unknown): AdminMaterialsPage {
+  const items = extractArrayResponse<AdminMaterialsPage["items"][number]>(
+    value,
+    "la lista de materiales",
+  );
+  return {
+    items,
+    meta: extractPaginationMeta(
+      value,
+      items.length,
+      DEFAULT_ADMIN_MATERIALS_PAGE_SIZE,
+    ),
+  };
+}
+
+function extractAdminExamQuestionsPage(value: unknown): AdminExamQuestionsPage {
+  const items = extractArrayResponse<AdminExamQuestion>(
+    value,
+    "la lista de preguntas del examen",
+  );
+
+  if (!value || typeof value !== "object") {
+    return {
+      examId: "",
+      title: "",
+      description: "",
+      passScore: 0,
+      updatedAt: null,
+      updatedByName: null,
+      items,
+      meta: extractPaginationMeta(
+        value,
+        items.length,
+        DEFAULT_ADMIN_EXAM_QUESTIONS_PAGE_SIZE,
+      ),
+    };
+  }
+
+  const response = value as {
+    examId?: unknown;
+    title?: unknown;
+    description?: unknown;
+    passScore?: unknown;
+    updatedAt?: unknown;
+    updatedByName?: unknown;
+  };
+
+  return {
+    examId: typeof response.examId === "string" ? response.examId : "",
+    title: typeof response.title === "string" ? response.title : "",
+    description:
+      typeof response.description === "string" ? response.description : "",
+    passScore:
+      typeof response.passScore === "number" && Number.isFinite(response.passScore)
+        ? response.passScore
+        : 0,
+    updatedAt: typeof response.updatedAt === "string" ? response.updatedAt : null,
+    updatedByName:
+      typeof response.updatedByName === "string" ? response.updatedByName : null,
+    items,
+    meta: extractPaginationMeta(
+      value,
+      items.length,
+      DEFAULT_ADMIN_EXAM_QUESTIONS_PAGE_SIZE,
+    ),
   };
 }
 
@@ -238,6 +421,65 @@ export async function getAdminPerformance(): Promise<AdminPerformanceItem[]> {
 
 export function getAdminExamConfig(): Promise<AdminExamConfig> {
   return apiGet<AdminExamConfig>("/admin/exam");
+}
+
+export async function getAdminMaterialsPage(
+  params: GetAdminMaterialsParams = {},
+): Promise<AdminMaterialsPage> {
+  const response = await apiGet<unknown>(buildAdminMaterialsPath(params));
+  return extractAdminMaterialsPage(response);
+}
+
+export async function getAdminMaterials(
+  params: GetAdminMaterialsParams = {},
+): Promise<AdminMaterialsPage["items"]> {
+  if (typeof params.page === "number" || typeof params.pageSize === "number") {
+    const response = await getAdminMaterialsPage({
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? DEFAULT_ADMIN_MATERIALS_PAGE_SIZE,
+      search: params.search,
+      categoryId: params.categoryId,
+      publishedStatus: params.publishedStatus,
+    });
+
+    return response.items;
+  }
+
+  const firstPage = await getAdminMaterialsPage({
+    page: 1,
+    pageSize: DEFAULT_ADMIN_MATERIALS_PAGE_SIZE,
+    search: params.search,
+    categoryId: params.categoryId,
+    publishedStatus: params.publishedStatus,
+  });
+
+  if (firstPage.meta.totalPages <= 1) {
+    return firstPage.items;
+  }
+
+  const items = [...firstPage.items];
+
+  for (let page = 2; page <= firstPage.meta.totalPages; page += 1) {
+    const nextPage = await getAdminMaterialsPage({
+      page,
+      pageSize: DEFAULT_ADMIN_MATERIALS_PAGE_SIZE,
+      search: params.search,
+      categoryId: params.categoryId,
+      publishedStatus: params.publishedStatus,
+    });
+
+    items.push(...nextPage.items);
+  }
+
+  return items;
+}
+
+export function getAdminExamQuestionsPage(
+  params: GetAdminExamQuestionsParams = {},
+): Promise<AdminExamQuestionsPage> {
+  return apiGet<unknown>(buildAdminExamQuestionsPath(params)).then(
+    extractAdminExamQuestionsPage,
+  );
 }
 
 export function updateAdminExam(

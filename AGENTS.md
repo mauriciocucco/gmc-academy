@@ -95,7 +95,7 @@ Los servicios tipados estan en `app/lib/api/`:
 | `exams.service.ts`        | getActiveExam, submitExam                                         |
 | `attempts.service.ts`     | getMyAttempts, getMyAttemptDetail                                 |
 | `certificates.service.ts` | getLatestCertificate, generateCertificatePdf                      |
-| `admin.service.ts`        | KPIs admin, alta de alumnos, detalle, notas, bloqueo/desbloqueo, materials-progress, intentos, performance, material assignments y configuracion del examen |
+| `admin.service.ts`        | KPIs admin, alta de alumnos, detalle, notas, bloqueo/desbloqueo, materiales paginados, materials-progress, intentos, performance, material assignments, configuracion del examen y preguntas paginadas |
 
 Variable de entorno: `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
 
@@ -118,7 +118,9 @@ DELETE /api/v1/materials/categories/:id (admin)
 POST /api/v1/materials            (admin)
 PATCH /api/v1/materials/:id       (admin)
 DELETE /api/v1/materials/:id      (admin)
+GET  /api/v1/admin/materials                       (admin, query: { page?, pageSize?, search?, categoryId?, publishedStatus? })
 GET  /api/v1/admin/exam                              (admin)
+GET  /api/v1/admin/exam/questions                    (admin, query: { page?, pageSize?, search? })
 PATCH /api/v1/admin/exam                             (admin, body: { title, description, passScore, questions: [{ id?, text, position, options: [{ id?, label, isCorrect }] }] })
 POST /api/v1/admin/students                          (admin, body: { fullName, email, phone? }, response: { id, fullName, email, phone, temporaryPassword, mustChangePassword })
 GET  /api/v1/admin/students                          (admin, query: { page?, pageSize?, search?, status?, attemptState?, accessStatus? })
@@ -148,7 +150,15 @@ GET  /api/v1/admin/performance    (admin)
 - El alumno puede volver a rendir aunque ya tenga un intento aprobado.
 - La revision detallada se obtiene con `GET /api/v1/attempts/me/:id`, por lo que puede reabrirse aunque el intento haya sido hecho desde otro navegador o sesion.
 - La pantalla `/admin/exam` consume `GET /api/v1/admin/exam` y guarda cambios con `PATCH /api/v1/admin/exam`.
+- La lista editable de preguntas en `/admin/exam` puede paginarse y filtrarse con `GET /api/v1/admin/exam/questions`; el frontend mantiene una vista local temporal mientras existan cambios sin guardar.
 - El backend debe devolver las opciones con `isCorrect` solo para admin; `GET /api/v1/exams/active` no debe exponer la respuesta correcta al alumno.
+
+## Materiales (frontend admin)
+
+- La pantalla `/admin/materials` se usa para CRUD de biblioteca y asignacion masiva por material.
+- La misma pantalla permite editar materiales existentes y confirma la eliminacion antes de borrarlos.
+- La asignacion masiva agrega el material al final del plan actual de cada alumno seleccionado.
+- El orden fino y el desbloqueo/bloqueo por alumno se administran desde `/admin/students/:id`.
 
 ## Calculo de progreso del estudiante
 

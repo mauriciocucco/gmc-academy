@@ -81,6 +81,31 @@ export type UpdateAdminStudentMaterialAssignmentsDto = {
   assignments: AdminStudentMaterialAssignment[];
 };
 
+export type PaginationMeta = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type AdminMaterialsPublishedStatusFilter =
+  | "all"
+  | "published"
+  | "draft";
+
+export type GetAdminMaterialsParams = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: string;
+  publishedStatus?: AdminMaterialsPublishedStatusFilter;
+};
+
+export type AdminMaterialsPage = {
+  items: MaterialResponse[];
+  meta: PaginationMeta;
+};
+
 // ─── Exams ────────────────────────────────────────────────────────────────────
 
 export type ExamOption = {
@@ -153,6 +178,23 @@ export type UpdateAdminExamDto = {
       isCorrect: boolean;
     }>;
   }>;
+};
+
+export type GetAdminExamQuestionsParams = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+};
+
+export type AdminExamQuestionsPage = {
+  examId: string;
+  title: string;
+  description: string;
+  passScore: number;
+  updatedAt: string | null;
+  updatedByName: string | null;
+  items: AdminExamQuestion[];
+  meta: PaginationMeta;
 };
 
 // ─── Attempts ─────────────────────────────────────────────────────────────────
