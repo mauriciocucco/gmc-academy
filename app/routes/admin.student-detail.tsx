@@ -367,7 +367,7 @@ function AttemptReviewCard({ review }: { review: AttemptDetail }) {
                 {question.questionText}
               </p>
 
-              <div className="grid gap-2 pl-8">
+              <div className="grid gap-2">
                 {question.options.map((option) => {
                   const isSelected = question.selectedOptionId === option.id;
 

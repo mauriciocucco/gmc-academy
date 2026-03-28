@@ -673,7 +673,7 @@ export default function AdminStudentsPage() {
               />
             </label>
 
-            <div className="flex flex-wrap items-end gap-2 lg:flex-col lg:justify-end">
+            <div className="flex flex-col items-stretch gap-2 lg:flex-col lg:items-end lg:justify-end">
               <button
                 type="button"
                 onClick={() => void handleAccessUpdate("block")}
@@ -682,7 +682,7 @@ export default function AdminStudentsPage() {
                   selectedActiveCount === 0 ||
                   isUpdatingAccess
                 }
-                className="inline-flex min-w-[12rem] items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-semibold text-rose-800 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-center text-sm font-semibold text-rose-800 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-[12rem] lg:w-auto"
               >
                 {isUpdatingAccess ? "Actualizando..." : "Bloquear seleccionados"}
               </button>
@@ -695,7 +695,7 @@ export default function AdminStudentsPage() {
                   selectedBlockedCount === 0 ||
                   isUpdatingAccess
                 }
-                className="inline-flex min-w-[12rem] items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-center text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-[12rem] lg:w-auto"
               >
                 {isUpdatingAccess ? "Actualizando..." : "Desbloquear seleccionados"}
               </button>

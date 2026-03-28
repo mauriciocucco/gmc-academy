@@ -38,7 +38,10 @@ function mapAttemptDetailToItem(detail: AttemptDetail): AttemptItem {
   };
 }
 
-function getOptionClassName(question: AttemptReviewQuestion, optionId: string): string {
+function getOptionClassName(
+  question: AttemptReviewQuestion,
+  optionId: string,
+): string {
   const isSelected = question.selectedOptionId === optionId;
   const isCorrect = question.correctOptionId === optionId;
 
@@ -80,7 +83,8 @@ function AttemptReview({
             {review.score}%
           </div>
           <p className="mt-3 text-lg text-slate-300">
-            {review.correctAnswers} de {review.totalQuestions} respuestas correctas
+            {review.correctAnswers} de {review.totalQuestions} respuestas
+            correctas
           </p>
         </div>
 
@@ -129,7 +133,7 @@ function AttemptReview({
                 {question.questionText}
               </p>
 
-              <div className="grid gap-2 pl-8">
+              <div className="grid gap-2">
                 {question.options.map((option) => {
                   const isSelected = question.selectedOptionId === option.id;
                   const isCorrect = question.correctOptionId === option.id;
@@ -357,7 +361,8 @@ export default function StudentExamPage() {
 
   const currentQuestion = exam?.questions[questionIndex];
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
-  const latestApprovedAttempt = attempts.find((attempt) => attempt.passed) ?? null;
+  const latestApprovedAttempt =
+    attempts.find((attempt) => attempt.passed) ?? null;
   const latestAttempt = attempts[0] ?? null;
   const attemptToSummarize = latestApprovedAttempt ?? latestAttempt;
 
@@ -406,7 +411,9 @@ export default function StudentExamPage() {
       setAttempts((previousAttempts) =>
         sortAttemptsByDate([
           fallbackAttempt,
-          ...previousAttempts.filter((attempt) => attempt.id !== response.attemptId),
+          ...previousAttempts.filter(
+            (attempt) => attempt.id !== response.attemptId,
+          ),
         ]),
       );
 
@@ -606,7 +613,9 @@ export default function StudentExamPage() {
           <button
             type="button"
             onClick={() =>
-              setQuestionIndex((previousIndex) => Math.max(0, previousIndex - 1))
+              setQuestionIndex((previousIndex) =>
+                Math.max(0, previousIndex - 1),
+              )
             }
             disabled={questionIndex === 0}
             className="cursor-pointer rounded-lg border border-slate-300 bg-white px-5 py-2.5 font-medium text-slate-700 enabled:hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"

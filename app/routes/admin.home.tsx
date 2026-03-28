@@ -89,8 +89,8 @@ function StatCard({
   return (
     <DashboardCard className="p-4 md:p-6">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex min-h-24 flex-col justify-between">
-          <p className="min-h-10 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <div className="flex flex-1 flex-col gap-4 md:min-h-24 md:justify-between">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 md:min-h-10">
             {label}
           </p>
           <p
@@ -195,7 +195,7 @@ function PerformanceChart({
       </div>
 
       {unavailable ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
           No se pudo cargar la serie historica de performance.
         </div>
       ) : items.length === 0 ? (
