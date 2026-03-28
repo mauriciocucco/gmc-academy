@@ -67,7 +67,7 @@ export default function LoginPage() {
           style={{ animation: "slide-in 0.6s ease-out" }}
         >
           <h1
-            className="mb-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-6xl font-black uppercase text-transparent"
+            className="mb-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-[2.9rem] font-black uppercase leading-[0.92] text-transparent sm:text-6xl"
             style={{
               filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.2))",
             }}
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   <span>⚡</span>
                   <span>Campus Virtual</span>
                 </div>
-                <h2 className="mb-4 text-4xl font-bold leading-tight">
+                <h2 className="mb-4 text-3xl font-bold leading-tight">
                   Tu Camino Hacia la Licencia
                 </h2>
                 <p className="text-lg text-slate-200">
