@@ -53,7 +53,7 @@ function CredentialField({
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
       <p
@@ -70,9 +70,8 @@ function CredentialField({
 export default function AdminStudentCreatePage() {
   const navigate = useNavigate();
   const [formState, setFormState] = useState<FormState>(initialFormState);
-  const [createdStudent, setCreatedStudent] = useState<CreatedAdminStudent | null>(
-    null,
-  );
+  const [createdStudent, setCreatedStudent] =
+    useState<CreatedAdminStudent | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -101,7 +100,7 @@ export default function AdminStudentCreatePage() {
 
   return (
     <section className="grid gap-4">
-      <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+      <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
@@ -126,7 +125,7 @@ export default function AdminStudentCreatePage() {
       </article>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           <form className="grid gap-5" onSubmit={onSubmit}>
             <label className="grid gap-1.5">
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -212,7 +211,7 @@ export default function AdminStudentCreatePage() {
           </form>
         </article>
 
-        <article className="rounded-3xl border border-white/70 bg-[linear-gradient(155deg,#f8fbff_0%,#eef6ff_45%,#ffffff_100%)] p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-[linear-gradient(155deg,#f8fbff_0%,#eef6ff_45%,#ffffff_100%)] p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           {createdStudent ? (
             <div className="grid gap-5">
               <div>
@@ -230,7 +229,10 @@ export default function AdminStudentCreatePage() {
               </div>
 
               <div className="grid gap-3">
-                <CredentialField label="Alumno" value={createdStudent.fullName} />
+                <CredentialField
+                  label="Alumno"
+                  value={createdStudent.fullName}
+                />
                 <CredentialField label="Email" value={createdStudent.email} />
                 <CredentialField
                   label="Contrasena temporal"

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "~/lib/auth";
+
 import { updateMe, uploadProfilePhoto } from "~/lib/api/auth.service";
 import { normalizeError } from "~/lib/api/errors";
+import { useAuth } from "~/lib/auth";
 
 export default function StudentProfilePage() {
   const { session, refreshSession } = useAuth();
@@ -21,7 +22,6 @@ export default function StudentProfilePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync when session loads (hydration delay)
   useEffect(() => {
     if (!session) return;
     setFullName(session.fullName);
@@ -44,13 +44,11 @@ export default function StudentProfilePage() {
     setErrorMessage("");
 
     try {
-      // Upload photo first if changed
       if (pendingFile) {
         await uploadProfilePhoto(pendingFile);
         setPendingFile(null);
       }
 
-      // Update profile fields
       await updateMe({
         fullName: fullName.trim(),
         email: email.trim(),
@@ -75,13 +73,15 @@ export default function StudentProfilePage() {
 
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark-static p-6">
+      <article className="card-racing-dark-static p-4 sm:p-4">
         <div className="flex items-center gap-4">
           <div className="text-4xl">👤</div>
           <div>
-            <h2 className="text-2xl font-bold text-white">Editar Perfil</h2>
-            <p className="text-slate-300">
-              Actualizá tu información personal y foto de perfil
+            <h2 className="text-[1.75rem] font-bold leading-tight text-white sm:text-2xl">
+              Editar Perfil
+            </h2>
+            <p className="text-sm leading-6 text-slate-300">
+              Actualiza tu informacion personal y foto de perfil.
             </p>
           </div>
         </div>
@@ -89,32 +89,54 @@ export default function StudentProfilePage() {
 
       <form
         onSubmit={handleSubmit}
-        className="grid gap-5 sm:grid-cols-[auto_1fr]"
+        className="grid gap-4 xl:grid-cols-[minmax(260px,0.42fr)_minmax(0,1fr)] xl:items-start"
       >
-        {/* Avatar column */}
-        <article className="card-racing-static flex flex-col items-center gap-4 p-6 sm:w-52">
-          <div
-            className="relative cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-            title="Cambiar foto"
-          >
-            {photoPreview ? (
-              <img
-                src={photoPreview}
-                alt="Foto de perfil"
-                className="h-28 w-28 rounded-full object-cover ring-4 ring-[#0066cc]/20"
-              />
-            ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full bg-[#0066cc] text-3xl font-bold text-white ring-4 ring-[#0066cc]/20">
-                {initials}
+        <article className="card-racing-static p-4 sm:p-4">
+          <div className="flex items-center gap-4 sm:gap-5 xl:flex-col xl:items-center">
+            <div
+              className="relative shrink-0 cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+              title="Cambiar foto"
+            >
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Foto de perfil"
+                  className="h-24 w-24 rounded-full object-cover ring-4 ring-[#0066cc]/20 sm:h-28 sm:w-28"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#0066cc] text-3xl font-bold text-white ring-4 ring-[#0066cc]/20 sm:h-28 sm:w-28">
+                  {initials}
+                </div>
+              )}
+              <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0066cc] text-white shadow">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
               </div>
-            )}
-            <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0066cc] text-white shadow">
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-              </svg>
+            </div>
+
+            <div className="min-w-0 flex-1 xl:flex xl:flex-col xl:items-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
+                Tu foto
+              </p>
+              <p className="mt-1 text-base font-semibold text-slate-900 xl:text-center">
+                {fullName || "Alumno GMC"}
+              </p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-3 inline-flex min-h-11 items-center justify-center rounded-2xl border border-[#0066cc]/25 bg-[#0066cc]/8 px-4 py-2.5 text-sm font-semibold text-[#0052a6] transition hover:bg-[#0066cc]/12"
+              >
+                Cambiar foto
+              </button>
             </div>
           </div>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -122,13 +144,26 @@ export default function StudentProfilePage() {
             className="hidden"
             onChange={handleFileChange}
           />
-          <p className="text-center text-xs text-slate-500">
-            JPG, PNG o WebP · máx. 5 MB
+
+          <p className="mt-4 text-center text-xs text-slate-500">
+            JPG, PNG o WebP · max. 5 MB
           </p>
         </article>
 
-        {/* Fields column */}
-        <article className="card-racing-static flex flex-col gap-5 p-6">
+        <article className="card-racing-static flex flex-col gap-5 p-4 sm:p-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
+              Tus datos
+            </p>
+            <h3 className="mt-2 text-[1.6rem] font-bold leading-tight text-slate-900 sm:text-2xl">
+              Informacion personal
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Revisa tus datos principales y mantenlos actualizados para recibir
+              comunicaciones correctamente.
+            </p>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">
@@ -139,24 +174,26 @@ export default function StudentProfilePage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                className="h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
               />
             </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">
-                Correo electrónico
+                Correo electronico
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                className="h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
               />
             </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">
-                Teléfono{" "}
+                Telefono{" "}
                 <span className="font-normal text-slate-400">(opcional)</span>
               </label>
               <input
@@ -164,7 +201,7 @@ export default function StudentProfilePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+5491122334455"
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                className="h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
               />
             </div>
           </div>
@@ -174,6 +211,7 @@ export default function StudentProfilePage() {
               ✓ {successMessage}
             </p>
           )}
+
           {errorMessage && (
             <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
               {errorMessage}
@@ -184,7 +222,7 @@ export default function StudentProfilePage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="btn-racing min-w-32 disabled:opacity-60"
+              className="btn-racing min-h-12 w-full justify-center sm:min-w-32 sm:w-auto disabled:opacity-60"
             >
               {isSaving ? "Guardando..." : "Guardar cambios"}
             </button>

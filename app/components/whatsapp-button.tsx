@@ -4,8 +4,8 @@ export function WhatsAppButton() {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 group">
-      <div className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+    <div className="group fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.35rem)] right-4 z-30 md:bottom-6 md:right-6 md:z-50">
+      <div className="pointer-events-none absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 md:block">
         <div className="font-semibold">🤖 Chatbot Educativo</div>
         <div className="text-xs text-gray-300">
           Consultas teoricas de conduccion
@@ -17,12 +17,12 @@ export function WhatsAppButton() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:bg-green-600 hover:shadow-xl"
+        className="relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:bg-green-600 hover:shadow-xl md:h-14 md:w-14"
         aria-label="Chatbot educativo - Consultas teoricas de conduccion"
       >
         <svg
           viewBox="0 0 24 24"
-          className="relative z-10 h-8 w-8 transition-transform group-hover:animate-bounce"
+          className="relative z-10 h-6 w-6 transition-transform group-hover:animate-bounce md:h-8 md:w-8"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -40,7 +40,7 @@ export function WhatsAppButton() {
         </svg>
 
         <span
-          className="pointer-events-none absolute inset-0 rounded-full bg-green-400 opacity-75 animate-ping"
+          className="pointer-events-none absolute inset-0 hidden rounded-full bg-green-400 opacity-75 animate-ping md:block"
           aria-hidden="true"
         />
       </a>

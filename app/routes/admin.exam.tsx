@@ -157,7 +157,9 @@ function validateExamDraft(draft: ExamDraft): string | null {
       return `Todas las opciones de la pregunta ${questionIndex + 1} deben tener texto.`;
     }
 
-    const correctOptions = question.options.filter((option) => option.isCorrect);
+    const correctOptions = question.options.filter(
+      (option) => option.isCorrect,
+    );
     if (correctOptions.length !== 1) {
       return `La pregunta ${questionIndex + 1} debe tener una sola respuesta correcta.`;
     }
@@ -215,7 +217,10 @@ function questionMatchesSearch(
     return true;
   }
 
-  const haystacks = [question.text, ...question.options.map((option) => option.label)];
+  const haystacks = [
+    question.text,
+    ...question.options.map((option) => option.label),
+  ];
   return haystacks.some((value) =>
     value.toLocaleLowerCase("es").includes(normalizedQuery),
   );
@@ -281,9 +286,8 @@ export default function AdminExamPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [questionSearchQuery, setQuestionSearchQuery] = useState("");
   const [questionCurrentPage, setQuestionCurrentPage] = useState(1);
-  const [questionPage, setQuestionPage] = useState<AdminExamQuestionsPage | null>(
-    null,
-  );
+  const [questionPage, setQuestionPage] =
+    useState<AdminExamQuestionsPage | null>(null);
   const [questionListError, setQuestionListError] = useState("");
   const [isQuestionsRefreshing, setIsQuestionsRefreshing] = useState(false);
 
@@ -496,7 +500,7 @@ export default function AdminExamPage() {
 
   if (loadError || !draft) {
     return (
-      <article className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-900 shadow-[0_18px_40px_-22px_rgba(127,29,29,0.35)]">
+      <article className="rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-900 shadow-[0_18px_40px_-22px_rgba(127,29,29,0.35)] sm:p-6">
         <h2 className="font-display text-2xl">No se pudo cargar el examen</h2>
         <p className="mt-2 text-sm leading-6">
           {loadError || "La configuracion del examen no esta disponible."}
@@ -521,7 +525,10 @@ export default function AdminExamPage() {
 
   return (
     <section className="grid gap-4">
-      <article className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-7">
+      <article
+        data-route-hero="true"
+        className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-7"
+      >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(53,162,255,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(0,77,163,0.14),transparent_32%)]" />
         <div className="relative">
           <div className="flex flex-wrap items-center gap-2">
@@ -536,8 +543,9 @@ export default function AdminExamPage() {
             </span>
           </div>
 
-          <h2 className="mt-5 max-w-3xl font-display text-3xl leading-tight text-slate-900 sm:text-4xl">
-            Edita el examen activo que veran los alumnos y define el umbral de aprobacion.
+          <h2 className="mt-4 max-w-3xl font-display text-[1.75rem] leading-[1.08] text-slate-900 sm:mt-5 sm:text-4xl">
+            Edita el examen activo que veran los alumnos y define el umbral de
+            aprobacion.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
             Esta pantalla administra las preguntas, sus opciones y la respuesta
@@ -545,14 +553,14 @@ export default function AdminExamPage() {
             el examen se edite.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-600">
-            <span className="rounded-2xl border border-white/80 bg-white/80 px-4 py-2">
+          <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:mt-6 sm:flex sm:flex-wrap">
+            <span className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
               Minimo requerido hoy:{" "}
               <span className="font-semibold text-slate-900">
                 {minimumCorrectAnswers} de {questionCount}
               </span>
             </span>
-            <span className="rounded-2xl border border-white/80 bg-white/80 px-4 py-2">
+            <span className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
               {lastUpdateLabel}
             </span>
           </div>
@@ -560,7 +568,7 @@ export default function AdminExamPage() {
       </article>
 
       <div className="grid gap-4">
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           <h3 className="font-display text-2xl text-slate-900">
             Parametros generales
           </h3>
@@ -608,28 +616,41 @@ export default function AdminExamPage() {
               </label>
             </div>
 
-            <label className="grid gap-1.5 rounded-3xl border border-slate-100 bg-slate-50/80 p-4">
+            <label className="grid gap-2 rounded-3xl border border-slate-100 bg-slate-50/80 p-4 sm:p-6">
               <span className="text-sm font-semibold text-slate-700">
                 Porcentaje minimo para aprobar
               </span>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                step={1}
-                value={draft.passScore}
-                onChange={(event) => {
-                  const nextPassScore = Number.parseInt(event.target.value, 10);
+              <div className="grid gap-3 rounded-2xl border border-white/80 bg-white/85 px-4 py-3 sm:flex sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Exigencia actual
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-slate-900">
+                    {draft.passScore}%
+                  </p>
+                </div>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={draft.passScore}
+                  onChange={(event) => {
+                    const nextPassScore = Number.parseInt(
+                      event.target.value,
+                      10,
+                    );
 
-                  updateDraftState((current) => ({
-                    ...current,
-                    passScore: Number.isNaN(nextPassScore)
-                      ? 0
-                      : nextPassScore,
-                  }));
-                }}
-                className="w-28 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
-              />
+                    updateDraftState((current) => ({
+                      ...current,
+                      passScore: Number.isNaN(nextPassScore)
+                        ? 0
+                        : nextPassScore,
+                    }));
+                  }}
+                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-center text-base font-semibold text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 sm:w-24"
+                />
+              </div>
               <div className="mt-1">
                 <div className="h-3 overflow-hidden rounded-full bg-slate-100">
                   <div
@@ -639,9 +660,9 @@ export default function AdminExamPage() {
                     }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
-                  Con {questionCount} pregunta{questionCount === 1 ? "" : "s"} se
-                  requieren al menos {minimumCorrectAnswers} respuestas
+                <p className="mt-3 text-sm leading-6 text-slate-500">
+                  Con {questionCount} pregunta{questionCount === 1 ? "" : "s"}{" "}
+                  se requieren al menos {minimumCorrectAnswers} respuestas
                   correctas.
                 </p>
               </div>
@@ -649,9 +670,9 @@ export default function AdminExamPage() {
           </div>
         </article>
 
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+            <div className="min-w-0">
               <h3 className="font-display text-2xl text-slate-900">
                 Banco de preguntas
               </h3>
@@ -667,7 +688,7 @@ export default function AdminExamPage() {
             <button
               type="button"
               onClick={handleAddQuestion}
-              className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae]"
+              className="cursor-pointer rounded-2xl bg-[#0066cc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0056ae] sm:w-auto"
             >
               Agregar pregunta
             </button>
@@ -683,7 +704,7 @@ export default function AdminExamPage() {
                 value={questionSearchQuery}
                 onChange={(event) => setQuestionSearchQuery(event.target.value)}
                 placeholder="Texto de la pregunta u opciones"
-                className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                className="h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
               />
             </label>
 
@@ -701,7 +722,7 @@ export default function AdminExamPage() {
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <div className="mt-3 flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <span>{effectiveQuestionMeta.totalItems} resultados</span>
             <div className="flex flex-wrap items-center gap-2">
               {isQuestionSearchActive ? (
@@ -711,7 +732,7 @@ export default function AdminExamPage() {
                 <button
                   type="button"
                   onClick={() => setQuestionSearchQuery("")}
-                  className="rounded-full border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-[#0066cc]/30 hover:text-[#0052a6]"
+                  className="rounded-full border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:border-[#0066cc]/30 hover:text-[#0052a6]"
                 >
                   Limpiar busqueda
                 </button>
@@ -735,7 +756,8 @@ export default function AdminExamPage() {
 
           {draft.questions.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
-              Aun no hay preguntas cargadas. Agrega la primera para armar el examen.
+              Aun no hay preguntas cargadas. Agrega la primera para armar el
+              examen.
             </div>
           ) : visibleQuestionEntries.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
@@ -746,10 +768,10 @@ export default function AdminExamPage() {
               {visibleQuestionEntries.map(({ question, globalIndex }) => (
                 <div
                   key={question.clientId}
-                  className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
+                  className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 sm:p-6"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                    <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
                         Pregunta {globalIndex + 1}
                       </p>
@@ -758,13 +780,14 @@ export default function AdminExamPage() {
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
                       <button
                         type="button"
                         onClick={() =>
                           updateDraftState((current) => {
                             const nextQuestions = [...current.questions];
-                            const previousQuestion = nextQuestions[globalIndex - 1];
+                            const previousQuestion =
+                              nextQuestions[globalIndex - 1];
 
                             if (!previousQuestion) {
                               return current;
@@ -780,7 +803,7 @@ export default function AdminExamPage() {
                           })
                         }
                         disabled={isQuestionSearchActive || globalIndex === 0}
-                        className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="min-h-11 cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         Subir
                       </button>
@@ -808,7 +831,7 @@ export default function AdminExamPage() {
                           isQuestionSearchActive ||
                           globalIndex === draft.questions.length - 1
                         }
-                        className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="min-h-11 cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         Bajar
                       </button>
@@ -822,7 +845,7 @@ export default function AdminExamPage() {
                             ),
                           }))
                         }
-                        className="cursor-pointer rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        className="min-h-11 cursor-pointer rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                       >
                         Eliminar
                       </button>
@@ -857,16 +880,51 @@ export default function AdminExamPage() {
                         key={option.clientId}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
-                            {getOptionTag(optionIndex)}
-                          </span>
+                        <div className="grid gap-3">
+                          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
+                                {getOptionTag(optionIndex)}
+                              </span>
 
-                          <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                            <input
-                              type="radio"
-                              checked={option.isCorrect}
-                              onChange={() =>
+                              <label className="inline-flex min-h-10 w-fit max-w-full items-center gap-2 rounded-full bg-slate-100 px-3 text-sm font-semibold text-slate-700">
+                                <input
+                                  type="radio"
+                                  checked={option.isCorrect}
+                                  onChange={() =>
+                                    updateDraftState((current) => ({
+                                      ...current,
+                                      questions: current.questions.map(
+                                        (item) => {
+                                          if (
+                                            item.clientId !== question.clientId
+                                          ) {
+                                            return item;
+                                          }
+
+                                          return {
+                                            ...item,
+                                            options: item.options.map(
+                                              (questionOption) => ({
+                                                ...questionOption,
+                                                isCorrect:
+                                                  questionOption.clientId ===
+                                                  option.clientId,
+                                              }),
+                                            ),
+                                          };
+                                        },
+                                      ),
+                                    }))
+                                  }
+                                />
+                                Correcta
+                              </label>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() =>
                                 updateDraftState((current) => ({
                                   ...current,
                                   questions: current.questions.map((item) => {
@@ -874,20 +932,32 @@ export default function AdminExamPage() {
                                       return item;
                                     }
 
+                                    const remainingOptions =
+                                      item.options.filter(
+                                        (questionOption) =>
+                                          questionOption.clientId !==
+                                          option.clientId,
+                                      );
+
                                     return {
                                       ...item,
-                                      options: item.options.map((questionOption) => ({
-                                        ...questionOption,
-                                        isCorrect:
-                                          questionOption.clientId === option.clientId,
-                                      })),
+                                      options:
+                                        normalizeCorrectOption(
+                                          remainingOptions,
+                                        ),
                                     };
                                   }),
                                 }))
                               }
-                            />
-                            Correcta
-                          </label>
+                              disabled={
+                                question.options.length <=
+                                MIN_OPTIONS_PER_QUESTION
+                              }
+                              className="min-h-10 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                            >
+                              Quitar
+                            </button>
+                          </div>
 
                           <input
                             type="text"
@@ -902,55 +972,29 @@ export default function AdminExamPage() {
 
                                   return {
                                     ...item,
-                                    options: item.options.map((questionOption) =>
-                                      questionOption.clientId === option.clientId
-                                        ? {
-                                            ...questionOption,
-                                            label: event.target.value,
-                                          }
-                                        : questionOption,
+                                    options: item.options.map(
+                                      (questionOption) =>
+                                        questionOption.clientId ===
+                                        option.clientId
+                                          ? {
+                                              ...questionOption,
+                                              label: event.target.value,
+                                            }
+                                          : questionOption,
                                     ),
                                   };
                                 }),
                               }))
                             }
-                            className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                            className="min-w-0 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                             placeholder={`Texto de la opcion ${getOptionTag(optionIndex)}`}
                           />
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateDraftState((current) => ({
-                                ...current,
-                                questions: current.questions.map((item) => {
-                                  if (item.clientId !== question.clientId) {
-                                    return item;
-                                  }
-
-                                  const remainingOptions = item.options.filter(
-                                    (questionOption) =>
-                                      questionOption.clientId !== option.clientId,
-                                  );
-
-                                  return {
-                                    ...item,
-                                    options: normalizeCorrectOption(remainingOptions),
-                                  };
-                                }),
-                              }))
-                            }
-                            disabled={question.options.length <= MIN_OPTIONS_PER_QUESTION}
-                            className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Quitar
-                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap justify-between gap-3">
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <p className="text-xs text-slate-500">
                       Minimo {MIN_OPTIONS_PER_QUESTION} opciones por pregunta.
                     </p>
@@ -972,7 +1016,7 @@ export default function AdminExamPage() {
                           ),
                         }))
                       }
-                      className="cursor-pointer rounded-xl border border-[#0066cc]/20 bg-[#0066cc]/5 px-3 py-2 text-xs font-semibold text-[#0052a6] transition hover:bg-[#0066cc]/10"
+                      className="min-h-11 w-full cursor-pointer rounded-xl border border-[#0066cc]/20 bg-[#0066cc]/5 px-3 py-2 text-xs font-semibold text-[#0052a6] transition hover:bg-[#0066cc]/10 sm:w-auto"
                     >
                       Agregar opcion
                     </button>
@@ -983,18 +1027,19 @@ export default function AdminExamPage() {
           )}
 
           {effectiveQuestionMeta.totalItems > 0 ? (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+            <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <p className="text-sm text-slate-500">
-                Pagina {questionCurrentPage} de {effectiveQuestionMeta.totalPages}
+                Pagina {questionCurrentPage} de{" "}
+                {effectiveQuestionMeta.totalPages}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
                 <button
                   type="button"
                   onClick={() =>
                     setQuestionCurrentPage((page) => Math.max(1, page - 1))
                   }
                   disabled={questionCurrentPage === 1 || isQuestionsRefreshing}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Anterior
                 </button>
@@ -1009,7 +1054,7 @@ export default function AdminExamPage() {
                     questionCurrentPage === effectiveQuestionMeta.totalPages ||
                     isQuestionsRefreshing
                   }
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Siguiente
                 </button>
@@ -1029,8 +1074,8 @@ export default function AdminExamPage() {
             </p>
           ) : null}
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
-            <p className="text-sm text-slate-500">
+          <div className="mt-5 flex flex-col gap-4 border-t border-slate-100 pt-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <p className="text-sm leading-6 text-slate-500">
               {isDirty
                 ? "Hay cambios sin guardar en la configuracion del examen."
                 : "La configuracion actual ya esta sincronizada con backend."}
@@ -1040,7 +1085,7 @@ export default function AdminExamPage() {
               type="button"
               onClick={handleSave}
               disabled={isSaving || !isDirty}
-              className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae] disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-12 cursor-pointer rounded-2xl bg-[#0066cc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0056ae] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {isSaving ? "Guardando..." : "Guardar examen"}
             </button>

@@ -232,11 +232,17 @@ export default function AdminStudentsPage() {
 
   return (
     <section className="grid gap-4">
-      <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+      <article
+        data-route-hero="true"
+        className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6"
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
+              Gestion de alumnos
+            </p>
             <h2 className="font-display text-2xl text-slate-900">Alumnos</h2>
-            <p className="mt-1 max-w-3xl text-sm text-slate-600">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               Busca alumnos, filtra por examen o acceso y gestiona bloqueos en lote
               antes de abrir la ficha individual.
             </p>
@@ -244,7 +250,7 @@ export default function AdminStudentsPage() {
 
           <Link
             to="/admin/students/new"
-            className="inline-flex items-center justify-center rounded-2xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(0,102,204,0.9)] transition hover:bg-[#0052a6]"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#0066cc] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(0,102,204,0.9)] transition hover:bg-[#0052a6] sm:w-auto"
           >
             Crear alumno
           </Link>
@@ -254,14 +260,44 @@ export default function AdminStudentsPage() {
       {isLoading ? (
         <div className="h-[30rem] animate-pulse rounded-3xl border border-white/70 bg-white/90" />
       ) : errorMessage ? (
-        <article className="rounded-2xl bg-rose-100 p-6 text-center font-semibold text-rose-800">
+        <article className="rounded-2xl bg-rose-100 p-4 text-center font-semibold text-rose-800 sm:p-6">
           {errorMessage}
         </article>
       ) : (
         <>
         <article className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
-          <div className="border-b border-slate-100 px-4 py-4">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_0.8fr_0.8fr_0.8fr]">
+          <div className="border-b border-slate-100 px-4 py-4 sm:px-5">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
+                    Filtros de busqueda
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Encuentra alumnos rapido y ajusta la vista por estado, examen o acceso.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <span>{totalItems ?? students.length} resultados</span>
+                  {hasActiveFilters ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setStatusFilter("all");
+                        setAttemptFilter("all");
+                        setAccessFilter("all");
+                      }}
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:border-[#0066cc]/30 hover:text-[#0052a6]"
+                    >
+                      Limpiar filtros
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_0.8fr_0.8fr_0.8fr]">
               <label className="flex flex-col gap-1.5">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Buscar
@@ -271,7 +307,7 @@ export default function AdminStudentsPage() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Nombre o email"
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                  className="h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                 />
               </label>
 
@@ -285,7 +321,7 @@ export default function AdminStudentsPage() {
                     onChange={(event) =>
                       setStatusFilter(event.target.value as AdminStudentStatusFilter)
                     }
-                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                    className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   >
                     <option value="all">Todos</option>
                     <option value="approved">Aprobados</option>
@@ -322,7 +358,7 @@ export default function AdminStudentsPage() {
                         event.target.value as AdminStudentAttemptStateFilter,
                       )
                     }
-                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                    className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   >
                     <option value="all">Todos</option>
                     <option value="with-attempt">Con intento</option>
@@ -359,7 +395,7 @@ export default function AdminStudentsPage() {
                         event.target.value as AdminStudentAccessStatusFilter,
                       )
                     }
-                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
+                    className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   >
                     <option value="all">Todos</option>
                     <option value="active">Activos</option>
@@ -384,27 +420,99 @@ export default function AdminStudentsPage() {
                 </div>
               </label>
             </div>
-
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              <span>{totalItems ?? students.length} resultados</span>
-              {hasActiveFilters ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("all");
-                    setAttemptFilter("all");
-                    setAccessFilter("all");
-                  }}
-                  className="rounded-full border border-slate-200 px-3 py-1 text-slate-600 transition hover:border-[#0066cc]/30 hover:text-[#0052a6]"
-                >
-                  Limpiar filtros
-                </button>
-              ) : null}
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 md:hidden">
+              <label className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
+                <input
+                  type="checkbox"
+                  checked={areAllCurrentPageSelected}
+                  onChange={toggleSelectAllCurrentPage}
+                  className="h-4 w-4 rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]/30"
+                />
+                <span>Seleccionar pagina</span>
+              </label>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 px-4 py-4 md:hidden">
+            {students.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-400">
+                No hay alumnos que coincidan con los filtros actuales.
+              </div>
+            ) : (
+              students.map((student) => {
+                const isSelected = selectedStudentIds.includes(student.id);
+
+                return (
+                  <article
+                    key={student.id}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_30px_-24px_rgba(2,32,72,0.28)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-800">
+                          {student.fullName}
+                        </p>
+                        <p className="mt-1 break-all text-sm text-slate-500">
+                          {student.email}
+                        </p>
+                      </div>
+
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleStudentSelection(student.id)}
+                        className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]/30"
+                        aria-label={`Seleccionar a ${student.fullName}`}
+                      />
+                    </div>
+
+                    <div className="mt-4 grid gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                          {formatScore(student.lastAttemptScore)}
+                        </span>
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            student.approved
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {student.approved ? "Aprobado" : "Pendiente"}
+                        </span>
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            student.blocked
+                              ? "bg-rose-100 text-rose-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {student.blocked ? "Bloqueado" : "Activo"}
+                        </span>
+                      </div>
+
+                      {student.blockedAt ? (
+                        <p className="text-xs text-slate-500">
+                          Bloqueado: {formatDateTime(student.blockedAt)}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/admin/students/${student.id}`)}
+                      className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-[#0066cc]/20 bg-[#0066cc]/5 px-4 py-2.5 text-sm font-semibold text-[#0052a6] transition hover:border-[#0066cc]/30 hover:bg-[#0066cc]/10"
+                    >
+                      Ver ficha
+                    </button>
+                  </article>
+                );
+              })
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-100/75 text-xs uppercase tracking-wide text-slate-600">
                 <tr>
@@ -503,7 +611,7 @@ export default function AdminStudentsPage() {
           </div>
 
           {students.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-4">
+            <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <div className="flex items-center gap-3 text-sm text-slate-500">
                 <p>
                   Pagina {currentPage} de {totalPages}
@@ -514,12 +622,12 @@ export default function AdminStudentsPage() {
                   </span>
                 ) : null}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
                 <button
                   type="button"
                   onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                   disabled={currentPage === 1 || isRefreshing}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Anterior
                 </button>
@@ -529,7 +637,7 @@ export default function AdminStudentsPage() {
                     setCurrentPage((page) => Math.min(totalPages, page + 1))
                   }
                   disabled={currentPage === totalPages || isRefreshing}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Siguiente
                 </button>
@@ -537,7 +645,7 @@ export default function AdminStudentsPage() {
             </div>
           ) : null}
         </article>
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
               Gestion de acceso

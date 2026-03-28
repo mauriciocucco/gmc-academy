@@ -68,7 +68,7 @@ function AttemptReview({
 
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark-static p-8">
+      <article className="card-racing-dark-static p-4 sm:p-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white">
             {passed ? "Examen Aprobado" : "Examen No Aprobado"}
@@ -114,7 +114,7 @@ function AttemptReview({
         </div>
       </article>
 
-      <article className="card-racing-static p-6">
+      <article className="card-racing-static p-4 sm:p-6">
         <h3 className="mb-5 text-xl font-bold text-slate-900">
           Revision de respuestas
         </h3>
@@ -180,7 +180,7 @@ function AttemptSummary({
 }) {
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark-static p-8">
+      <article className="card-racing-dark-static p-4 sm:p-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white">
             {attempt.passed
@@ -466,7 +466,7 @@ export default function StudentExamPage() {
   if (loadError) {
     return (
       <section className="grid gap-6">
-        <article className="rounded-2xl bg-rose-100 p-8 text-center font-semibold text-rose-800">
+        <article className="rounded-2xl bg-rose-100 p-4 text-center font-semibold text-rose-800 sm:p-8">
           {loadError}
         </article>
       </section>
@@ -530,7 +530,7 @@ export default function StudentExamPage() {
         </article>
       )}
 
-      <article className="card-racing-dark-static p-6">
+      <article className="card-racing-dark-static p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div>
@@ -546,7 +546,7 @@ export default function StudentExamPage() {
         </div>
       </article>
 
-      <article className="card-racing-static p-6">
+      <article className="card-racing-static p-4 sm:p-6">
         <div className="mb-5">
           <div className="rounded-lg border border-slate-300 bg-white px-4 py-2 shadow-sm">
             <p className="text-lg font-bold text-slate-900">
@@ -555,7 +555,7 @@ export default function StudentExamPage() {
           </div>
         </div>
 
-        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-5">
+        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-6">
           <h3 className="text-xl font-bold leading-relaxed text-slate-900">
             {currentQuestion.text}
           </h3>

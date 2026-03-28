@@ -19,6 +19,10 @@
   --gmc-gray: #1a1a1a;
   --gmc-gray-medium: #2a2a2a;
   --gmc-border: #374151;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 body {
@@ -114,6 +118,27 @@ h4 {
       rgba(0, 102, 204, 0.1) 10px,
       rgba(0, 102, 204, 0.1) 11px
     );
+  }
+
+  .safe-bottom-page {
+    padding-bottom: calc(var(--safe-bottom) + 7.5rem);
+  }
+
+  .safe-bottom-nav {
+    bottom: calc(var(--safe-bottom) + 0.75rem);
+  }
+
+  .safe-bottom-floating {
+    bottom: calc(var(--safe-bottom) + 6rem);
+  }
+
+  .safe-bottom-panel {
+    bottom: calc(var(--safe-bottom) + 5.75rem);
+  }
+
+  .safe-inline {
+    padding-left: max(1rem, calc(var(--safe-left) + 1rem));
+    padding-right: max(1rem, calc(var(--safe-right) + 1rem));
   }
 }
 

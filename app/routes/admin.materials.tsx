@@ -86,7 +86,9 @@ export default function AdminMaterialsPage() {
   const [libraryPublishedStatus, setLibraryPublishedStatus] =
     useState<AdminMaterialsPublishedStatusFilter>("all");
   const [libraryCurrentPage, setLibraryCurrentPage] = useState(1);
-  const [libraryTotalItems, setLibraryTotalItems] = useState<number | null>(null);
+  const [libraryTotalItems, setLibraryTotalItems] = useState<number | null>(
+    null,
+  );
   const [libraryTotalPages, setLibraryTotalPages] = useState(1);
   const [libraryReloadToken, setLibraryReloadToken] = useState(0);
   const [formState, setFormState] = useState<FormState>(initialFormState);
@@ -96,15 +98,14 @@ export default function AdminMaterialsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [materialPendingDelete, setMaterialPendingDelete] =
     useState<MaterialResponse | null>(null);
-  const [editingMaterial, setEditingMaterial] = useState<MaterialResponse | null>(
-    null,
-  );
-  const [editFormState, setEditFormState] = useState<FormState>(initialFormState);
+  const [editingMaterial, setEditingMaterial] =
+    useState<MaterialResponse | null>(null);
+  const [editFormState, setEditFormState] =
+    useState<FormState>(initialFormState);
   const [editErrorMessage, setEditErrorMessage] = useState("");
   const [isUpdatingMaterial, setIsUpdatingMaterial] = useState(false);
-  const [assigningMaterial, setAssigningMaterial] = useState<MaterialResponse | null>(
-    null,
-  );
+  const [assigningMaterial, setAssigningMaterial] =
+    useState<MaterialResponse | null>(null);
   const [assignmentStudentSearchQuery, setAssignmentStudentSearchQuery] =
     useState("");
   const [selectedAssignmentStudentIds, setSelectedAssignmentStudentIds] =
@@ -421,7 +422,10 @@ export default function AdminMaterialsPage() {
   return (
     <>
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.45fr]">
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article
+          data-route-hero="true"
+          className="rounded-3xl border border-white/70 bg-white/90 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] p-4"
+        >
           <h2 className="font-display text-2xl text-slate-900">
             Publicar material
           </h2>
@@ -449,14 +453,20 @@ export default function AdminMaterialsPage() {
             ) : null}
 
             <div>
-              <label htmlFor="title" className="mb-1.5 block text-sm font-semibold text-slate-700">
+              <label
+                htmlFor="title"
+                className="mb-1.5 block text-sm font-semibold text-slate-700"
+              >
                 Titulo
               </label>
               <input
                 id="title"
                 value={formState.title}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, title: event.target.value }))
+                  setFormState((prev) => ({
+                    ...prev,
+                    title: event.target.value,
+                  }))
                 }
                 className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                 placeholder="Ej. Manual de prioridad de paso"
@@ -464,14 +474,20 @@ export default function AdminMaterialsPage() {
             </div>
 
             <div>
-              <label htmlFor="description" className="mb-1.5 block text-sm font-semibold text-slate-700">
+              <label
+                htmlFor="description"
+                className="mb-1.5 block text-sm font-semibold text-slate-700"
+              >
                 Descripcion
               </label>
               <textarea
                 id="description"
                 value={formState.description}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, description: event.target.value }))
+                  setFormState((prev) => ({
+                    ...prev,
+                    description: event.target.value,
+                  }))
                 }
                 rows={3}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
@@ -481,14 +497,20 @@ export default function AdminMaterialsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="linkLabel" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="linkLabel"
+                  className="mb-1.5 block text-sm font-semibold text-slate-700"
+                >
                   Etiqueta del enlace
                 </label>
                 <input
                   id="linkLabel"
                   value={formState.linkLabel}
                   onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, linkLabel: event.target.value }))
+                    setFormState((prev) => ({
+                      ...prev,
+                      linkLabel: event.target.value,
+                    }))
                   }
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   placeholder="Ej. Abrir material"
@@ -496,7 +518,10 @@ export default function AdminMaterialsPage() {
               </div>
 
               <div>
-                <label htmlFor="linkUrl" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="linkUrl"
+                  className="mb-1.5 block text-sm font-semibold text-slate-700"
+                >
                   URL del recurso
                 </label>
                 <input
@@ -504,7 +529,10 @@ export default function AdminMaterialsPage() {
                   type="url"
                   value={formState.linkUrl}
                   onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, linkUrl: event.target.value }))
+                    setFormState((prev) => ({
+                      ...prev,
+                      linkUrl: event.target.value,
+                    }))
                   }
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   placeholder="https://..."
@@ -514,7 +542,10 @@ export default function AdminMaterialsPage() {
 
             <div>
               <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                <label htmlFor="category" className="block text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-semibold text-slate-700"
+                >
                   Categoria
                 </label>
                 <Link
@@ -557,7 +588,11 @@ export default function AdminMaterialsPage() {
                       stroke="currentColor"
                       strokeWidth="1.8"
                     >
-                      <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="m5 7 5 5 5-5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                 </div>
@@ -597,7 +632,9 @@ export default function AdminMaterialsPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || isLoading || !!loadError || !hasCategories}
+              disabled={
+                isSubmitting || isLoading || !!loadError || !hasCategories
+              }
               className="cursor-pointer rounded-xl bg-[#0066cc] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0056ae] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Publicando..." : "Publicar material"}
@@ -606,7 +643,7 @@ export default function AdminMaterialsPage() {
         </article>
 
         <div className="grid gap-4">
-          <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+          <article className="rounded-3xl border border-white/70 bg-white/90 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] p-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
@@ -667,7 +704,7 @@ export default function AdminMaterialsPage() {
             </div>
           </article>
 
-          <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+          <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] ">
             <h3 className="font-display text-xl text-slate-900">
               Biblioteca de materiales
             </h3>
@@ -684,7 +721,9 @@ export default function AdminMaterialsPage() {
                 <input
                   type="search"
                   value={librarySearchQuery}
-                  onChange={(event) => setLibrarySearchQuery(event.target.value)}
+                  onChange={(event) =>
+                    setLibrarySearchQuery(event.target.value)
+                  }
                   placeholder="Titulo, descripcion, categoria o link"
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                 />
@@ -697,7 +736,9 @@ export default function AdminMaterialsPage() {
                 <div className="relative">
                   <select
                     value={libraryCategoryId}
-                    onChange={(event) => setLibraryCategoryId(event.target.value)}
+                    onChange={(event) =>
+                      setLibraryCategoryId(event.target.value)
+                    }
                     className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                   >
                     <option value="all">Todas</option>
@@ -716,7 +757,11 @@ export default function AdminMaterialsPage() {
                       stroke="currentColor"
                       strokeWidth="1.8"
                     >
-                      <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="m5 7 5 5 5-5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                 </div>
@@ -731,7 +776,8 @@ export default function AdminMaterialsPage() {
                     value={libraryPublishedStatus}
                     onChange={(event) =>
                       setLibraryPublishedStatus(
-                        event.target.value as AdminMaterialsPublishedStatusFilter,
+                        event.target
+                          .value as AdminMaterialsPublishedStatusFilter,
                       )
                     }
                     className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
@@ -749,7 +795,11 @@ export default function AdminMaterialsPage() {
                       stroke="currentColor"
                       strokeWidth="1.8"
                     >
-                      <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="m5 7 5 5 5-5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                 </div>
@@ -783,7 +833,10 @@ export default function AdminMaterialsPage() {
             {isLibraryLoading ? (
               <div className="mt-4 grid gap-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-16 animate-pulse rounded-xl border border-slate-200 bg-white p-3" />
+                  <div
+                    key={index}
+                    className="h-16 animate-pulse rounded-xl border border-slate-200 bg-white p-3"
+                  />
                 ))}
               </div>
             ) : libraryError ? (
@@ -798,29 +851,38 @@ export default function AdminMaterialsPage() {
                   </li>
                 ) : (
                   libraryItems.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm">
-                      <div className="flex flex-wrap items-start justify-between gap-4">
+                    <li
+                      key={item.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 text-sm"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold text-slate-800">{item.title}</p>
-                            <span className="rounded-full bg-[#0066cc]/10 px-2 py-0.5 text-xs font-semibold text-[#0052a6]">
+                            <span className="rounded-full bg-[#0066cc]/10 px-2.5 py-1 text-xs font-semibold text-[#0052a6]">
                               {item.category.name}
                             </span>
                             {!item.published ? (
-                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
                                 Borrador
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-2 text-slate-600">{item.description}</p>
-                          <div className="mt-2 flex flex-wrap gap-2">
+
+                          <p className="mt-3 text-base font-semibold leading-6 text-slate-800">
+                            {item.title}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-slate-600">
+                            {item.description}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
                             {item.links.map((link) => (
                               <a
                                 key={link.id}
                                 href={link.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex text-xs font-semibold text-[#0054aa] hover:underline"
+                                className="inline-flex min-h-10 items-center rounded-full border border-[#0066cc]/15 bg-[#0066cc]/6 px-3 py-2 text-xs font-semibold text-[#0054aa] transition hover:border-[#0066cc]/25 hover:bg-[#0066cc]/10"
                               >
                                 {link.label}
                               </a>
@@ -828,7 +890,7 @@ export default function AdminMaterialsPage() {
                           </div>
                         </div>
 
-                        <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 sm:w-auto">
                           <button
                             type="button"
                             onClick={() => {
@@ -836,7 +898,7 @@ export default function AdminMaterialsPage() {
                               setEditFormState(mapMaterialToFormState(item));
                               setEditErrorMessage("");
                             }}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="min-h-10 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             Editar
                           </button>
@@ -848,7 +910,7 @@ export default function AdminMaterialsPage() {
                               setSelectedAssignmentStudentIds([]);
                               setAssignmentActionError("");
                             }}
-                            className="rounded-xl border border-[#0066cc]/20 bg-[#0066cc]/6 px-3 py-2 text-xs font-semibold text-[#0052a6] transition hover:border-[#0066cc]/30 hover:bg-[#0066cc]/10"
+                            className="min-h-10 rounded-xl border border-[#0066cc]/20 bg-[#0066cc]/6 px-3 py-2 text-xs font-semibold text-[#0052a6] transition hover:border-[#0066cc]/30 hover:bg-[#0066cc]/10"
                           >
                             Asignar a alumnos
                           </button>
@@ -856,9 +918,11 @@ export default function AdminMaterialsPage() {
                             type="button"
                             onClick={() => setMaterialPendingDelete(item)}
                             disabled={deletingId === item.id}
-                            className="text-xs font-semibold text-rose-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                            className="min-h-10 rounded-xl px-2 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            {deletingId === item.id ? "Eliminando..." : "Eliminar"}
+                            {deletingId === item.id
+                              ? "Eliminando..."
+                              : "Eliminar"}
                           </button>
                         </div>
                       </div>
@@ -876,7 +940,9 @@ export default function AdminMaterialsPage() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setLibraryCurrentPage((page) => Math.max(1, page - 1))}
+                    onClick={() =>
+                      setLibraryCurrentPage((page) => Math.max(1, page - 1))
+                    }
                     disabled={libraryCurrentPage === 1 || isLibraryRefreshing}
                     className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -885,9 +951,14 @@ export default function AdminMaterialsPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setLibraryCurrentPage((page) => Math.min(libraryTotalPages, page + 1))
+                      setLibraryCurrentPage((page) =>
+                        Math.min(libraryTotalPages, page + 1),
+                      )
                     }
-                    disabled={libraryCurrentPage === libraryTotalPages || isLibraryRefreshing}
+                    disabled={
+                      libraryCurrentPage === libraryTotalPages ||
+                      isLibraryRefreshing
+                    }
                     className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#0066cc]/30 hover:text-[#0052a6] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Siguiente
@@ -912,7 +983,8 @@ export default function AdminMaterialsPage() {
                     {assigningMaterial.title}
                   </h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    Se agregará al final del plan actual de cada alumno seleccionado.
+                    Se agregará al final del plan actual de cada alumno
+                    seleccionado.
                   </p>
                 </div>
                 <button
@@ -933,7 +1005,9 @@ export default function AdminMaterialsPage() {
                 <input
                   type="search"
                   value={assignmentStudentSearchQuery}
-                  onChange={(event) => setAssignmentStudentSearchQuery(event.target.value)}
+                  onChange={(event) =>
+                    setAssignmentStudentSearchQuery(event.target.value)
+                  }
                   placeholder="Nombre o email"
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20"
                 />
@@ -952,7 +1026,9 @@ export default function AdminMaterialsPage() {
 
               <div className="mt-5 grid gap-3">
                 {filteredStudents.map((student) => {
-                  const isSelected = selectedAssignmentStudentIds.includes(student.id);
+                  const isSelected = selectedAssignmentStudentIds.includes(
+                    student.id,
+                  );
 
                   return (
                     <label
@@ -970,8 +1046,12 @@ export default function AdminMaterialsPage() {
                         className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]/30"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-900">{student.fullName}</p>
-                        <p className="mt-1 text-sm text-slate-500">{student.email}</p>
+                        <p className="font-semibold text-slate-900">
+                          {student.fullName}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {student.email}
+                        </p>
                       </div>
                     </label>
                   );
@@ -982,7 +1062,8 @@ export default function AdminMaterialsPage() {
             <div className="border-t border-slate-100 px-6 py-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-slate-500">
-                  Selecciona alumnos para agregar este material al final de su plan.
+                  Selecciona alumnos para agregar este material al final de su
+                  plan.
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -1034,10 +1115,16 @@ export default function AdminMaterialsPage() {
               </div>
             </div>
 
-            <form onSubmit={handleUpdateMaterial} className="overflow-y-auto px-6 py-5">
+            <form
+              onSubmit={handleUpdateMaterial}
+              className="overflow-y-auto px-6 py-5"
+            >
               <div className="grid gap-3">
                 <div>
-                  <label htmlFor="edit-title" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  <label
+                    htmlFor="edit-title"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700"
+                  >
                     Titulo
                   </label>
                   <input
@@ -1054,7 +1141,10 @@ export default function AdminMaterialsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="edit-description" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  <label
+                    htmlFor="edit-description"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700"
+                  >
                     Descripcion
                   </label>
                   <textarea
@@ -1073,7 +1163,10 @@ export default function AdminMaterialsPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="edit-link-label" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label
+                      htmlFor="edit-link-label"
+                      className="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
                       Etiqueta del enlace
                     </label>
                     <input
@@ -1090,7 +1183,10 @@ export default function AdminMaterialsPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="edit-link-url" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                    <label
+                      htmlFor="edit-link-url"
+                      className="mb-1.5 block text-sm font-semibold text-slate-700"
+                    >
                       URL del recurso
                     </label>
                     <input
@@ -1109,7 +1205,10 @@ export default function AdminMaterialsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="edit-category" className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  <label
+                    htmlFor="edit-category"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700"
+                  >
                     Categoria
                   </label>
                   <div className="relative">
@@ -1139,7 +1238,11 @@ export default function AdminMaterialsPage() {
                         stroke="currentColor"
                         strokeWidth="1.8"
                       >
-                        <path d="m5 7 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                          d="m5 7 5 5 5-5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </span>
                   </div>
@@ -1195,7 +1298,7 @@ export default function AdminMaterialsPage() {
 
       {materialPendingDelete ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-xl rounded-3xl border border-white/70 bg-white p-6 shadow-[0_28px_80px_-28px_rgba(2,32,72,0.45)]">
+          <div className="w-full max-w-xl rounded-3xl border border-white/70 bg-white p-4 shadow-[0_28px_80px_-28px_rgba(2,32,72,0.45)]">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
               Confirmar eliminacion
             </p>

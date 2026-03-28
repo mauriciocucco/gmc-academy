@@ -162,7 +162,7 @@ export default function AdminMaterialCategoriesPage() {
 
   return (
     <section className="grid gap-4">
-      <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+      <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
@@ -187,7 +187,7 @@ export default function AdminMaterialCategoriesPage() {
       </article>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)]">
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-display text-2xl text-slate-900">
@@ -290,7 +290,7 @@ export default function AdminMaterialCategoriesPage() {
           </form>
         </article>
 
-        <article className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)]">
+        <article className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_18px_40px_-22px_rgba(2,32,72,0.45)] sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-display text-2xl text-slate-900">

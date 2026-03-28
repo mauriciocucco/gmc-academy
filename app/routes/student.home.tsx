@@ -29,7 +29,7 @@ function buildQuickActions(progress: StudentProgress): QuickAction[] {
       title: "Examen de práctica",
       description: "Entrena con preguntas similares al examen real.",
       icon: "🎯",
-      gradient: "from-gray-700 to-gray-900",
+      gradient: "from-blue-600 to-blue-800",
       completed: progress.examPassed,
     },
     {
@@ -45,7 +45,7 @@ function buildQuickActions(progress: StudentProgress): QuickAction[] {
 
 function ProgressSkeleton() {
   return (
-    <article className="card-racing-dark-static relative overflow-hidden p-6">
+    <article className="card-racing-dark-static relative overflow-hidden p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="space-y-2">
           <div className="h-7 w-36 animate-pulse rounded bg-white/20" />
@@ -75,7 +75,7 @@ export default function StudentHomePage() {
       {progress === null ? (
         <ProgressSkeleton />
       ) : (
-        <article className="card-racing-dark-static relative overflow-hidden p-6">
+        <article className="card-racing-dark-static relative overflow-hidden p-4 sm:p-6">
           {/* Imagen de fondo sutil */}
           <div
             className="absolute inset-0 opacity-10"
@@ -116,14 +116,18 @@ export default function StudentHomePage() {
       )}
 
       {/* Mensaje de bienvenida */}
-      <article className="card-racing-static p-6">
-        <div className="flex items-start gap-4">
-          <div className="text-4xl">🚗</div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+      <article className="card-racing-static p-4 sm:p-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0066cc]/10 text-[1.35rem] text-[#0052a6]">
+              🚗
+            </div>
+            <h2 className="text-[1.5rem] font-bold leading-[1.06] text-slate-900 sm:text-2xl">
               Bienvenido a tu formación vial
             </h2>
-            <p className="mt-2 text-slate-600">
+          </div>
+          <div className="mt-4">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               Hemos preparado material de alta calidad, desarrollado por
               instructores certificados con años de experiencia. Sin embargo,
               recordá que el conocimiento teórico es solo el primer paso: la
@@ -149,24 +153,28 @@ export default function StudentHomePage() {
           <Link
             key={item.to}
             to={item.to}
-            className="card-racing group relative overflow-hidden p-6 cursor-pointer"
+            className="card-racing group relative flex min-h-[11.5rem] cursor-pointer flex-col overflow-hidden p-4 sm:min-h-[12.5rem] sm:p-6"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <div
               className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-10 transition group-hover:opacity-20`}
             />
 
-            <div className="relative z-10">
-              <div className="mb-3 flex items-center justify-between">
+            <div className="relative z-10 flex h-full flex-col">
+              <div className="mb-4 flex items-start justify-between gap-3">
                 <span className="text-4xl">{item.icon}</span>
                 {item.completed && (
-                  <span className="rounded-full bg-green-500 px-2.5 py-0.5 text-xs font-bold text-white">
+                  <span className="rounded-full bg-green-500 px-2.5 py-1 text-[11px] font-bold text-white">
                     ✓ Completado
                   </span>
                 )}
               </div>
-              <h3 className="text-xl font-bold text-slate-900">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-600">{item.description}</p>
+              <h3 className="text-xl font-bold leading-tight text-slate-900">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {item.description}
+              </p>
             </div>
           </Link>
         ))}

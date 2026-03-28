@@ -87,7 +87,7 @@ function StatCard({
   const toneStyle = toneClasses(tone);
 
   return (
-    <DashboardCard className="p-5">
+    <DashboardCard className="p-4 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-h-24 flex-col justify-between">
           <p className="min-h-10 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -109,20 +109,14 @@ function StatCard({
   );
 }
 
-function DonutChart({
-  value,
-  label,
-}: {
-  value: number;
-  label: string;
-}) {
+function DonutChart({ value, label }: { value: number; label: string }) {
   const safeValue = Math.min(100, Math.max(0, value));
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - safeValue / 100);
 
   return (
-    <div className="relative flex h-40 w-40 items-center justify-center">
+    <div className="relative flex h-32 w-32 items-center justify-center sm:h-40 sm:w-40">
       <svg
         viewBox="0 0 140 140"
         className="h-full w-full -rotate-90"
@@ -155,11 +149,11 @@ function DonutChart({
           strokeDashoffset={dashOffset}
         />
       </svg>
-      <div className="absolute left-1/2 top-1/2 flex w-[5.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center text-center">
-        <span className="font-display text-4xl leading-none text-slate-900">
+      <div className="absolute left-1/2 top-1/2 flex w-[4.6rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center text-center sm:w-[5.5rem]">
+        <span className="font-display text-3xl leading-none text-slate-900 sm:text-4xl">
           {safeValue}%
         </span>
-        <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+        <span className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:mt-2 sm:text-[10px] sm:tracking-[0.24em]">
           {label}
         </span>
       </div>
@@ -178,7 +172,7 @@ function PerformanceChart({
     items.length > 0 ? Math.max(...items.map((item) => item.attempts), 1) : 1;
 
   return (
-    <DashboardCard className="p-6">
+    <DashboardCard className="p-4 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
@@ -269,7 +263,7 @@ function ScoreDistribution({
   const total = bands.reduce((sum, band) => sum + band.count, 0);
 
   return (
-    <DashboardCard className="p-6">
+    <DashboardCard className="p-4 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
@@ -343,13 +337,15 @@ function StudentList({
   const toneStyle = toneClasses(tone);
 
   return (
-    <DashboardCard className="p-6">
+    <DashboardCard className="p-4 md:p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-xl text-slate-900">{title}</h3>
           <p className="mt-1 text-sm text-slate-500">{description}</p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${toneStyle.badge}`}>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${toneStyle.badge}`}
+        >
           {students.length}
         </span>
       </div>
@@ -379,7 +375,9 @@ function StudentList({
                     </p>
                     <p className="text-sm text-slate-500">{student.email}</p>
                   </div>
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${toneStyle.badge}`}>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${toneStyle.badge}`}
+                  >
                     {student.lastAttemptScore !== null
                       ? `${student.lastAttemptScore}%`
                       : "Sin intento"}
@@ -557,9 +555,8 @@ export default function AdminHomePage() {
       }
 
       if (performanceResult.status === "fulfilled") {
-        const normalizedPerformance = normalizeArrayPayload<AdminPerformanceItem>(
-          performanceResult.value,
-        );
+        const normalizedPerformance =
+          normalizeArrayPayload<AdminPerformanceItem>(performanceResult.value);
 
         setPerformance(
           [...normalizedPerformance.items].sort((left, right) =>
@@ -600,13 +597,16 @@ export default function AdminHomePage() {
 
   if (errorMessage || !stats) {
     return (
-      <article className="rounded-2xl bg-rose-100 p-6 text-center font-semibold text-rose-800">
+      <article className="rounded-2xl bg-rose-100 p-4 text-center font-semibold text-rose-800 md:p-6">
         {errorMessage || "No se pudo cargar el resumen academico."}
       </article>
     );
   }
 
-  const pendingStudents = Math.max(0, stats.totalStudents - stats.approvedStudents);
+  const pendingStudents = Math.max(
+    0,
+    stats.totalStudents - stats.approvedStudents,
+  );
   const scoreBands = getScoreBands(students);
   const priorityStudents = getPriorityStudents(students);
   const topStudents = getTopStudents(students);
@@ -615,8 +615,11 @@ export default function AdminHomePage() {
   return (
     <section className="grid gap-4">
       <div className="grid gap-4 lg:grid-cols-[1.45fr_0.85fr]">
-        <DashboardCard className="relative overflow-hidden p-6 sm:p-7">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(53,162,255,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(0,77,163,0.14),transparent_34%)]" />
+        <DashboardCard className="relative overflow-hidden p-4 md:p-7">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(53,162,255,0.12),transparent_42%)] sm:bg-[radial-gradient(circle_at_top_left,rgba(53,162,255,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(0,77,163,0.14),transparent_34%)]"
+          />
           <div className="relative">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#0066cc]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#0052a6]">
@@ -628,11 +631,13 @@ export default function AdminHomePage() {
             </div>
 
             <h2 className="mt-5 max-w-xl font-display text-3xl leading-tight text-slate-900 sm:text-4xl">
-              Dashboard academico con foco en avance, riesgo y actividad reciente.
+              Dashboard academico con foco en avance, riesgo y actividad
+              reciente.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              Una lectura rapida del estado del aula para decidir a quien seguir,
-              como viene el rendimiento y si la tasa de aprobacion se sostiene.
+              Una lectura rapida del estado del aula para decidir a quien
+              seguir, como viene el rendimiento y si la tasa de aprobacion se
+              sostiene.
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -664,19 +669,30 @@ export default function AdminHomePage() {
           </div>
         </DashboardCard>
 
-        <DashboardCard className="flex flex-col items-center justify-center p-6">
+        <DashboardCard className="flex flex-col items-center justify-center p-4 sm:p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0066cc]">
             Salud general
           </p>
-          <h3 className="mt-2 text-center font-display text-2xl text-slate-900">
+          <h3 className="mt-2 text-center font-display text-[1.75rem] leading-tight text-slate-900 sm:text-2xl">
             Tasa de aprobacion
           </h3>
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <DonutChart value={stats.approvalRate} label="aprobacion" />
           </div>
-          <p className="mt-5 max-w-xs text-center text-sm leading-6 text-slate-600">
-            {stats.approvedStudents} alumnos ya aprobaron y {pendingStudents} aun
-            necesitan seguimiento.
+          <p className="mt-4 max-w-[16rem] text-center text-sm leading-6 text-slate-600 sm:mt-5 sm:max-w-xs">
+            {pendingStudents === 0
+              ? `Todos los alumnos activos aprobaron. ${stats.approvedStudents} ${
+                  stats.approvedStudents === 1 ? "alumno" : "alumnos"
+                } en objetivo.`
+              : `${stats.approvedStudents} ${
+                  stats.approvedStudents === 1
+                    ? "alumno aprobo"
+                    : "alumnos aprobaron"
+                }. ${pendingStudents} ${
+                  pendingStudents === 1
+                    ? "sigue pendiente"
+                    : "siguen pendientes"
+                }.`}
           </p>
         </DashboardCard>
       </div>

@@ -84,7 +84,7 @@ export default function StudentMaterialsPage() {
 
   return (
     <section className="grid gap-6">
-      <article className="card-racing-dark-static p-6">
+      <article className="card-racing-dark-static p-4 sm:p-6">
         <div className="flex items-center gap-4">
           <div className="text-4xl">📚</div>
           <div>
@@ -113,19 +113,19 @@ export default function StudentMaterialsPage() {
       {isLoading && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card-racing animate-pulse p-5 h-48" />
+            <div key={i} className="card-racing h-48 animate-pulse p-4 sm:p-6" />
           ))}
         </div>
       )}
 
       {!isLoading && errorMessage && (
-        <article className="rounded-2xl bg-rose-100 p-6 text-center text-rose-800 font-semibold">
+        <article className="rounded-2xl bg-rose-100 p-4 text-center text-rose-800 font-semibold sm:p-6">
           {errorMessage}
         </article>
       )}
 
       {!isLoading && !errorMessage && materials.length === 0 && (
-        <article className="rounded-2xl border border-slate-200 bg-white/80 p-10 text-center text-slate-500">
+        <article className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-center text-slate-500 sm:p-10">
           No hay materiales disponibles aun.
         </article>
       )}
@@ -141,7 +141,7 @@ export default function StudentMaterialsPage() {
             return (
               <article
                 key={item.id}
-                className="card-racing group relative overflow-hidden p-5 flex flex-col"
+                className="card-racing group relative overflow-hidden p-4 flex flex-col sm:p-6"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div
